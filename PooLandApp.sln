@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.32112.339
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PooLandApp", "PooLandApp.csproj", "{DBCB4A45-BF16-4C56-9E7C-199FE44CF8F2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PooLandApp", "PooLandApp.csproj", "{DBCB4A45-BF16-4C56-9E7C-199FE44CF8F2}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorLeaflet", "..\BlazorLeaflet-master\BlazorLeaflet\BlazorLeaflet\BlazorLeaflet.csproj", "{48889768-EF6A-4DE8-A773-03E71AA2420E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorLeaflet", "..\BlazorLeaflet\BlazorLeaflet\BlazorLeaflet\BlazorLeaflet.csproj", "{2CC11F06-6483-42C8-A95F-7A21309828E4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -17,10 +17,10 @@ Global
 		{DBCB4A45-BF16-4C56-9E7C-199FE44CF8F2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DBCB4A45-BF16-4C56-9E7C-199FE44CF8F2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DBCB4A45-BF16-4C56-9E7C-199FE44CF8F2}.Release|Any CPU.Build.0 = Release|Any CPU
-		{48889768-EF6A-4DE8-A773-03E71AA2420E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{48889768-EF6A-4DE8-A773-03E71AA2420E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{48889768-EF6A-4DE8-A773-03E71AA2420E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{48889768-EF6A-4DE8-A773-03E71AA2420E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2CC11F06-6483-42C8-A95F-7A21309828E4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2CC11F06-6483-42C8-A95F-7A21309828E4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2CC11F06-6483-42C8-A95F-7A21309828E4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2CC11F06-6483-42C8-A95F-7A21309828E4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
