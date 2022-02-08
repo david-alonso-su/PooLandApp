@@ -3,16 +3,19 @@
 @using PooLandApp.Data
 @using BlazorLeaflet
 @using BlazorLeaflet.Models
+@using PooLandApp.Server
 @using Radzen
 @using Radzen.Blazor
+@using Microsoft.Extensions.Options
 @inject IJSRuntime jsRuntime
 @inject PooLandDbContext pooContext
+@inject IOptionsMonitor<LeafletOptions> leafletOptions
 
 <h3>MapView</h3>
 
 @if (_map == null)
 {
-      <RadzenProgressBar Value="100" ShowValue="false" Mode="ProgressBarMode.Indeterminate" />
+    <RadzenProgressBar Value="100" ShowValue="false" Mode="ProgressBarMode.Indeterminate" />
 }
 else
 {
@@ -27,17 +30,23 @@ else
 
     private Map _map;
 
-    private LatLng _startAt = new LatLng(40.3556f, -3.5319f);
+
+
+    //private LatLng _startAt = new LatLng(40.3556f, -3.5319f);
 
 
     //protected override void OnInitialized()
     protected override async Task OnInitializedAsync()
     {
+        var MaxBounsUp = new LatLng(leafletOptions.CurrentValue.MaxBounds.Up.Latitude, leafletOptions.CurrentValue.MaxBounds.Up.Longitude);
+        var MaxBounsDown = new LatLng(leafletOptions.CurrentValue.MaxBounds.Down.Latitude, leafletOptions.CurrentValue.MaxBounds.Down.Longitude);
+
         _map = new Map(jsRuntime)
             {
-                Center = _startAt,
-                Zoom = 13f,
-                MaxBounds = new Tuple<LatLng, LatLng>(new LatLng(40.3855f, -3.5534f), new LatLng(40.3261f, -3.4912f))
+
+                Center = new LatLng(leafletOptions.CurrentValue.Center.Latitude, leafletOptions.CurrentValue.Center.Longitude),
+                Zoom = leafletOptions.CurrentValue.Zoom,
+                MaxBounds = new Tuple<LatLng, LatLng>(MaxBounsUp, MaxBounsDown)
 
             };
 
@@ -46,16 +55,17 @@ else
         {
             _map.AddLayer(new TileLayer
                 {
-                    UrlTemplate = "https://a.tile.openstreetmap.org/{z}/{x}/{y}.png",
-                    Attribution = "&copy; <a href=\"https://www.openstreetmap.org/copyright\">OpenStreetMap</a> contributors",
+                    UrlTemplate = leafletOptions.CurrentValue.UrlTemplate,
+                    Attribution = leafletOptions.CurrentValue.Attribution
                 });
 
 
             _map.AddLayer(new MarkerClusterGroup());
 
-            for (int i = 0; i < 100; i++)
+
+            foreach (var poo in pooContext.Poodata)
             {
-                var marker = new Marker(NextFloat(40.3261f, 40.3855f), NextFloat(-3.5534f, -3.4912f))
+                var marker = new Marker((float)poo.Latitude, (float)poo.Longitude)
                     {
                         Icon = new Icon
                         {
@@ -64,19 +74,11 @@ else
                         }
                     };
                 _map.AddLayer(marker);
-
             }
-
 
         };
     }
 
 
-    static float NextFloat(float min, float max)
-    {
-        System.Random random = new System.Random();
-        double val = (random.NextDouble() * (max - min) + min);
-        return (float)val;
-    }
 
 }

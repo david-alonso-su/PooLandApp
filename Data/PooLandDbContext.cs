@@ -34,7 +34,7 @@ namespace PooLandApp.Data
 
                 entity.Property(e => e.Id).HasColumnName("id");
 
-                entity.Property(e => e.Date).HasColumnName("date");
+                entity.Property(e => e.Date).HasColumnName("date").HasDefaultValue(DateTime.UtcNow);
 
                 entity.Property(e => e.Description)
                     .HasMaxLength(50)
