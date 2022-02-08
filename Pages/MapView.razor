@@ -1,17 +1,18 @@
 ﻿@page "/"
 @page "/mapview"
+@using PooLandApp.Data
 @using BlazorLeaflet
 @using BlazorLeaflet.Models
+@using Radzen
 @using Radzen.Blazor
 @inject IJSRuntime jsRuntime
+@inject PooLandDbContext pooContext
 
 <h3>MapView</h3>
 
 @if (_map == null)
 {
-    <div class="spinner-border" role="status">
-        <span class="sr-only">Loading...</span>
-    </div>
+      <RadzenProgressBar Value="100" ShowValue="false" Mode="ProgressBarMode.Indeterminate" />
 }
 else
 {
@@ -52,7 +53,7 @@ else
 
             _map.AddLayer(new MarkerClusterGroup());
 
-            for (int i = 0; i < 5000; i++)
+            for (int i = 0; i < 100; i++)
             {
                 var marker = new Marker(NextFloat(40.3261f, 40.3855f), NextFloat(-3.5534f, -3.4912f))
                     {
@@ -69,7 +70,6 @@ else
 
         };
     }
-
 
 
     static float NextFloat(float min, float max)
