@@ -10,6 +10,7 @@
 @inject IJSRuntime jsRuntime
 @inject PooLandDbContext pooContext
 @inject IOptionsMonitor<LeafletOptions> leafletOptions
+@inject IOptionsMonitor<DataOptions> dataOptions
 
 <h3>MapView</h3>
 
@@ -63,16 +64,20 @@ else
             _map.AddLayer(new MarkerClusterGroup());
 
 
-            foreach (var poo in pooContext.Poodata)
+            foreach (var poo in pooContext.Poodata.Where(x => x.Date > DateTime.UtcNow.AddDays(- dataOptions.CurrentValue.DefaultStartDaysAgo)))
             {
-                var marker = new Marker((float)poo.Latitude, (float)poo.Longitude)
+
+
+                var marker = new Marker(poo.Latitude, poo.Longitude)
+                {
+                    Icon = new Icon
                     {
-                        Icon = new Icon
-                        {
-                            Url = "poo.png",
-                            ClassName = "map-icon",
-                        }
-                    };
+                        Url = "poo.png",
+                        ClassName = "map-icon",
+                    },
+                    Popup = new Popup { Content = (new LeafletPopupLayout() { Description = poo.Description, Photo = poo.Photo}).GetHtml() },
+                    Tooltip = new BlazorLeaflet.Models.Tooltip { Content = poo.Description },
+                };
                 _map.AddLayer(marker);
             }
 

@@ -24,6 +24,7 @@ builder.Services.AddDbContext<PooLandDbContext>(options =>
 
 
 builder.Services.Configure<LeafletOptions>(builder.Configuration.GetSection("Leaflet"));
+builder.Services.Configure<DataOptions>(builder.Configuration.GetSection("DataOptions"));
 
 var app = builder.Build();
 
