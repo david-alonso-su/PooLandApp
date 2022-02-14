@@ -1,5 +1,6 @@
 ﻿@page "/"
 @page "/mapview"
+@using Microsoft.EntityFrameworkCore
 @using PooLandApp.Data
 @using BlazorLeaflet
 @using BlazorLeaflet.Models
@@ -12,37 +13,54 @@
 @inject IOptionsMonitor<LeafletOptions> leafletOptions
 @inject IOptionsMonitor<DataOptions> dataOptions
 
-<h3>MapView</h3>
-
-@if (_map == null)
+@if (MapComponent == null)
 {
     <RadzenProgressBar Value="100" ShowValue="false" Mode="ProgressBarMode.Indeterminate" />
 }
 else
 {
-    <div style="height:90vh;">
-        <LeafletMap Map="_map" />
+    <div class="row" style="height:90vh;">
+        <LeafletMap Map="MapComponent" />
     </div>
-}
+    <div class="row">
+        <RadzenCard>
+            <h4 class="mb-4">Weeks Ago</h4>
+            <RadzenSlider Range="true" @bind-Value=@weeksAgo TValue="IEnumerable<int>" Min="@fromWeeksAgo" Max="0" Change=@(args => OnChangeWeeksAgo(args)) Class="w-100" />
+        </RadzenCard>
+    </div>
 
+}
 
 
 @code {
 
-    private Map _map;
+    Map? MapComponent;
 
+    IEnumerable<int>? weeksAgo;
 
+    List<Poodatum>? PooData = new List<Poodatum>();
+    List<Marker>? Markers = new List<Marker>();
 
-    //private LatLng _startAt = new LatLng(40.3556f, -3.5319f);
+    int fromWeeksAgo;
 
+    CancellationTokenSource tokenChangeWeeksAgo = new CancellationTokenSource();
 
-    //protected override void OnInitialized()
     protected override async Task OnInitializedAsync()
     {
+        var MaxDaysAgo = dataOptions.CurrentValue.MaxDaysAgo;
+        var DefaultStartDaysAgo = dataOptions.CurrentValue.DefaultStartDaysAgo;
+        var DaysGrouping = dataOptions.CurrentValue.DaysGrouping;
+
+        fromWeeksAgo = (int)Math.Round((double)-(MaxDaysAgo / DaysGrouping));
+        var startWeekAgo = (int)Math.Round((double)-(DefaultStartDaysAgo / DaysGrouping));
+        weeksAgo = new int[] { startWeekAgo, 0 };
+        PooData = await pooContext.Poodata.Where(x => x.Date > DateTime.UtcNow.AddDays(-MaxDaysAgo)).ToListAsync();
+
+
         var MaxBounsUp = new LatLng(leafletOptions.CurrentValue.MaxBounds.Up.Latitude, leafletOptions.CurrentValue.MaxBounds.Up.Longitude);
         var MaxBounsDown = new LatLng(leafletOptions.CurrentValue.MaxBounds.Down.Latitude, leafletOptions.CurrentValue.MaxBounds.Down.Longitude);
 
-        _map = new Map(jsRuntime)
+        MapComponent = new Map(jsRuntime)
             {
 
                 Center = new LatLng(leafletOptions.CurrentValue.Center.Latitude, leafletOptions.CurrentValue.Center.Longitude),
@@ -51,39 +69,90 @@ else
 
             };
 
-
-        _map.OnInitialized += async () =>
+        MapComponent.OnInitialized += async () =>
         {
-            _map.AddLayer(new TileLayer
+            MapComponent.AddLayer(new TileLayer
                 {
                     UrlTemplate = leafletOptions.CurrentValue.UrlTemplate,
                     Attribution = leafletOptions.CurrentValue.Attribution
                 });
 
+        //MarkerCluster Not work on delete icons.
+        //MapComponent.AddLayer(new MarkerClusterGroup());
 
-            _map.AddLayer(new MarkerClusterGroup());
-
-
-            foreach (var poo in pooContext.Poodata.Where(x => x.Date > DateTime.UtcNow.AddDays(- dataOptions.CurrentValue.DefaultStartDaysAgo)))
-            {
-
-
-                var marker = new Marker(poo.Latitude, poo.Longitude)
-                {
-                    Icon = new Icon
-                    {
-                        Url = "poo.png",
-                        ClassName = "map-icon",
-                    },
-                    Popup = new Popup { Content = (new LeafletPopupLayout() { Description = poo.Description, Photo = poo.Photo}).GetHtml() },
-                    Tooltip = new BlazorLeaflet.Models.Tooltip { Content = poo.Description },
-                };
-                _map.AddLayer(marker);
-            }
+        await LoadMarkers(PooData.Where(x => x.Date > DateTime.UtcNow.AddDays(-dataOptions.CurrentValue.DefaultStartDaysAgo)),
+                               tokenChangeWeeksAgo.Token);
 
         };
     }
 
+    async void OnChangeWeeksAgo(IEnumerable<int> value)
+    {
+        var listValues = value.ToList();
+        var fromWeekAgo = listValues[0] * dataOptions.CurrentValue.DaysGrouping;
+        var toWeekAgo = listValues[1] * dataOptions.CurrentValue.DaysGrouping;
 
 
+        tokenChangeWeeksAgo.Cancel();
+
+
+        Console.WriteLine($"Stating Loading Markers from {fromWeekAgo} to {toWeekAgo} at {DateTime.UtcNow}");
+
+        try
+        {
+            await Task.Delay(2000, tokenChangeWeeksAgo.Token);
+            await LoadMarkers(PooData.Where(x => x.Date > DateTime.UtcNow.AddDays(fromWeekAgo) 
+                                        && x.Date < DateTime.UtcNow.AddDays(toWeekAgo)),
+                              tokenChangeWeeksAgo.Token);
+        }
+        catch (OperationCanceledException e)
+        {
+            Console.WriteLine($"OPeration canceled  from {fromWeekAgo} to {toWeekAgo} at {DateTime.UtcNow}");
+        }
+
+
+        //await LoadMarkers(PooData.Where(x => x.Date > DateTime.UtcNow.AddDays(fromWeekAgo) && x.Date < DateTime.UtcNow.AddDays(toWeekAgo)));
+        Console.WriteLine($"End Load Markers from {fromWeekAgo} to {toWeekAgo} at {DateTime.UtcNow}");
+    }
+
+    async Task ClearMarkers()
+    {
+        lock (Markers)
+        {
+            foreach (var marker in Markers)
+            {
+                MapComponent.RemoveLayer(marker);
+            }
+            Markers.Clear(); 
+        }
+    }
+
+    async Task LoadMarkers(IEnumerable<Poodatum> pooData, CancellationToken cancellationToken)
+    {
+        
+        await ClearMarkers();
+        List<Marker> tmpMarkers = new List<Marker>();
+
+        await Parallel.ForEachAsync(pooData, async (poo, cancellationToken) =>
+        {
+            var marker = new Marker(poo.Latitude, poo.Longitude)
+                      {
+                          Icon = new Icon
+                          {
+                              Url = "poo.png",
+                              ClassName = "map-icon",
+                          },
+                          Popup = new Popup { Content = (new LeafletPopupLayout() { Description = poo.Description, Photo = poo.Photo }).GetHtml() },
+                          Tooltip = new BlazorLeaflet.Models.Tooltip { Content = poo.Description },
+                      };
+            MapComponent.AddLayer(marker);
+            tmpMarkers.Add(marker);
+        });
+
+        lock (Markers)
+        {
+            Markers.AddRange(tmpMarkers);
+        }
+        
+    }
 }
