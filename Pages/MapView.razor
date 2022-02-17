@@ -24,8 +24,8 @@ else
     </div>
     <div class="row">
         <RadzenCard>
-            <h4 class="mb-4">Weeks Ago</h4>
-            <RadzenSlider Range="true" @bind-Value=@weeksAgo TValue="IEnumerable<int>" Min="@fromWeeksAgo" Max="0" Change=@(args => OnChangeWeeksAgo(args)) Class="w-100" />
+            <h4 class="mb-4">Weeks Ago From  @fromWeekAgoDisplay To @toWeekAgoDisplay</h4>
+            <RadzenSlider Range="true" @bind-Value=@weeksAgo TValue="IEnumerable<int>" Min="@fromWeeksAgo" Max="0" Step=1 Change=@(args => OnChangeWeeksAgo(args)) Class="w-100" />
         </RadzenCard>
     </div>
 
@@ -43,7 +43,11 @@ else
 
     int fromWeeksAgo;
 
-    CancellationTokenSource tokenChangeWeeksAgo = new CancellationTokenSource();
+    int fromWeekAgoDisplay;
+    int toWeekAgoDisplay;
+
+
+    bool bOnChangeWeeksAgoFirst = true;
 
     protected override async Task OnInitializedAsync()
     {
@@ -54,6 +58,9 @@ else
         fromWeeksAgo = (int)Math.Round((double)-(MaxDaysAgo / DaysGrouping));
         var startWeekAgo = (int)Math.Round((double)-(DefaultStartDaysAgo / DaysGrouping));
         weeksAgo = new int[] { startWeekAgo, 0 };
+        fromWeekAgoDisplay = Math.Abs(startWeekAgo);
+        toWeekAgoDisplay = 0;
+
         PooData = await pooContext.Poodata.Where(x => x.Date > DateTime.UtcNow.AddDays(-MaxDaysAgo)).ToListAsync();
 
 
@@ -77,11 +84,10 @@ else
                     Attribution = leafletOptions.CurrentValue.Attribution
                 });
 
-        //MarkerCluster Not work on delete icons.
-        //MapComponent.AddLayer(new MarkerClusterGroup());
+            //MarkerCluster Not work on delete icons.
+            //MapComponent.AddLayer(new MarkerClusterGroup());
 
-        await LoadMarkers(PooData.Where(x => x.Date > DateTime.UtcNow.AddDays(-dataOptions.CurrentValue.DefaultStartDaysAgo)),
-                               tokenChangeWeeksAgo.Token);
+            await LoadMarkers(PooData.Where(x => x.Date > DateTime.UtcNow.AddDays(-dataOptions.CurrentValue.DefaultStartDaysAgo)));
 
         };
     }
@@ -91,28 +97,12 @@ else
         var listValues = value.ToList();
         var fromWeekAgo = listValues[0] * dataOptions.CurrentValue.DaysGrouping;
         var toWeekAgo = listValues[1] * dataOptions.CurrentValue.DaysGrouping;
+        fromWeekAgoDisplay = Math.Abs(listValues[0]);
+        toWeekAgoDisplay = Math.Abs(listValues[1]);
+        Console.WriteLine($"From {fromWeekAgoDisplay} To {toWeekAgoDisplay}");
+        await LoadMarkerWait(PooData.Where(x => x.Date > DateTime.UtcNow.AddDays(fromWeekAgo)
+                                        && x.Date < DateTime.UtcNow.AddDays(toWeekAgo)));
 
-
-        tokenChangeWeeksAgo.Cancel();
-
-
-        Console.WriteLine($"Stating Loading Markers from {fromWeekAgo} to {toWeekAgo} at {DateTime.UtcNow}");
-
-        try
-        {
-            await Task.Delay(2000, tokenChangeWeeksAgo.Token);
-            await LoadMarkers(PooData.Where(x => x.Date > DateTime.UtcNow.AddDays(fromWeekAgo) 
-                                        && x.Date < DateTime.UtcNow.AddDays(toWeekAgo)),
-                              tokenChangeWeeksAgo.Token);
-        }
-        catch (OperationCanceledException e)
-        {
-            Console.WriteLine($"OPeration canceled  from {fromWeekAgo} to {toWeekAgo} at {DateTime.UtcNow}");
-        }
-
-
-        //await LoadMarkers(PooData.Where(x => x.Date > DateTime.UtcNow.AddDays(fromWeekAgo) && x.Date < DateTime.UtcNow.AddDays(toWeekAgo)));
-        Console.WriteLine($"End Load Markers from {fromWeekAgo} to {toWeekAgo} at {DateTime.UtcNow}");
     }
 
     async Task ClearMarkers()
@@ -123,28 +113,45 @@ else
             {
                 MapComponent.RemoveLayer(marker);
             }
-            Markers.Clear(); 
+            Markers.Clear();
         }
     }
 
-    async Task LoadMarkers(IEnumerable<Poodatum> pooData, CancellationToken cancellationToken)
+    async Task LoadMarkerWait(IEnumerable<Poodatum> pooData, int waitTimeMs = 2000)
     {
-        
+        //Create this workArround because RadzenSlider fire every change in slider.
+        await Task.Delay(waitTimeMs);
+        if (bOnChangeWeeksAgoFirst)
+        {
+            bOnChangeWeeksAgoFirst = false;
+            await LoadMarkers(pooData);
+            bOnChangeWeeksAgoFirst = true;
+        }
+        else
+        {
+            Console.WriteLine("LoadMarkers Canceled");
+        }
+    }
+
+
+    async Task LoadMarkers(IEnumerable<Poodatum> pooData)
+    {
+        Console.WriteLine($"Start Load markers From {fromWeekAgoDisplay} To {toWeekAgoDisplay} at {DateTime.UtcNow}");
         await ClearMarkers();
         List<Marker> tmpMarkers = new List<Marker>();
 
         await Parallel.ForEachAsync(pooData, async (poo, cancellationToken) =>
         {
             var marker = new Marker(poo.Latitude, poo.Longitude)
-                      {
-                          Icon = new Icon
-                          {
-                              Url = "poo.png",
-                              ClassName = "map-icon",
-                          },
-                          Popup = new Popup { Content = (new LeafletPopupLayout() { Description = poo.Description, Photo = poo.Photo }).GetHtml() },
-                          Tooltip = new BlazorLeaflet.Models.Tooltip { Content = poo.Description },
-                      };
+                {
+                    Icon = new Icon
+                    {
+                        Url = "poo.png",
+                        ClassName = "map-icon",
+                    },
+                    Popup = new Popup { Content = (new LeafletPopupLayout() { Description = poo.Description, Photo = poo.Photo }).GetHtml() },
+                    Tooltip = new BlazorLeaflet.Models.Tooltip { Content = poo.Description },
+                };
             MapComponent.AddLayer(marker);
             tmpMarkers.Add(marker);
         });
@@ -153,6 +160,6 @@ else
         {
             Markers.AddRange(tmpMarkers);
         }
-        
+        Console.WriteLine($"End Load markers at {DateTime.UtcNow}");
     }
 }
