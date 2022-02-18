@@ -1,0 +1,109 @@
+﻿@page "/MapLocation/{Coordinates}"
+@using BlazorLeaflet
+@using BlazorLeaflet.Models
+@using PooLandApp.Server
+@using Radzen
+@using Radzen.Blazor
+@using Microsoft.Extensions.Options
+@inject Radzen.DialogService DialogService
+@inject NotificationService NotificationService
+@inject IOptionsMonitor<LeafletOptions> leafletOptions
+@inject IJSRuntime jsRuntime
+
+@if (MapComponent == null)
+{
+    <RadzenProgressBar Value="100" ShowValue="false" Mode="ProgressBarMode.Indeterminate" />
+}
+else
+{
+    <div class="row">
+        <p>Latitude: @(Coordinates.Lat)</p>
+        <p>Longitude:@(Coordinates.Lng)</p>
+    </div>
+    <div class="row" style="height:50vh;">
+        <LeafletMap Map="MapComponent" />
+    </div>
+    <div class="row">
+        <div class="col-md-12 text-right">
+            <RadzenButton Click="@((args) => DialogService.Close(null))" ButtonStyle="ButtonStyle.Secondary" Text="Cancel" Style="width: 120px" Class="mr-1" />
+            <RadzenButton Click="@((args) => DialogService.Close(Coordinates))" Text="OK" Style="width: 120px" Disabled=@(!markerInsideBounds) />
+        </div>
+    </div>
+}
+
+@code {
+
+    [Parameter]
+    public LatLng Coordinates { get; set; }
+
+    Map? MapComponent;
+
+    Marker? marker;
+
+    LatLng markerLatLng;
+    bool markerInsideBounds = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var MaxBounsUp = new LatLng(leafletOptions.CurrentValue.MaxBounds.Up.Latitude, leafletOptions.CurrentValue.MaxBounds.Up.Longitude);
+        var MaxBounsDown = new LatLng(leafletOptions.CurrentValue.MaxBounds.Down.Latitude, leafletOptions.CurrentValue.MaxBounds.Down.Longitude);
+
+        MapComponent = new Map(jsRuntime)
+            {
+
+                Center = new LatLng(leafletOptions.CurrentValue.Center.Latitude, leafletOptions.CurrentValue.Center.Longitude),
+                Zoom = leafletOptions.CurrentValue.Zoom,
+                MaxBounds = new Tuple<LatLng, LatLng>(MaxBounsUp, MaxBounsDown)
+
+            };
+
+        MapComponent.OnInitialized += async () =>
+        {
+            MapComponent.AddLayer(new TileLayer
+                {
+                    UrlTemplate = leafletOptions.CurrentValue.UrlTemplate,
+                    Attribution = leafletOptions.CurrentValue.Attribution
+                });
+
+
+            marker = new Marker(Coordinates)
+                {
+                    Icon = new Icon
+                    {
+                        Url = "poo.png",
+                        ClassName = "map-icon",
+                    },
+                    Draggable = true
+                };
+
+            marker.OnDrag += async (a, b) =>
+            {
+
+                markerLatLng = b.LatLng;
+
+            };
+
+            marker.OnDragEnd += async (a, b) =>
+            {
+                var result = await MapComponent.IsPositionInsideBounds(new Tuple<LatLng, LatLng>(MaxBounsUp, MaxBounsDown), markerLatLng);
+                if (result)
+                {
+                    markerInsideBounds = true;
+                    Coordinates.Lat = markerLatLng.Lat;
+                    Coordinates.Lng = markerLatLng.Lng;
+                   
+                }
+                else
+                {
+                    markerInsideBounds = false;
+                    var message = new NotificationMessage { Style = "position: absolute; left: -1000px;", Severity = NotificationSeverity.Error, Summary = "Out Of boundaries", Detail = "Out of boundaries", Duration = 40000 };
+                    NotificationService.Notify(message);
+                }
+                 StateHasChanged();
+            };
+
+            MapComponent.AddLayer(marker);
+        };
+
+    }
+}

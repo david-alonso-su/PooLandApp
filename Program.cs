@@ -1,9 +1,11 @@
+using AspNetMonsters.Blazor.Geolocation;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using PooLandApp.Data;
 using PooLandApp.Server;
+using Radzen;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,6 +27,10 @@ builder.Services.AddDbContext<PooLandDbContext>(options =>
 
 builder.Services.Configure<LeafletOptions>(builder.Configuration.GetSection("Leaflet"));
 builder.Services.Configure<DataOptions>(builder.Configuration.GetSection("DataOptions"));
+
+builder.Services.AddScoped<LocationService>();
+builder.Services.AddScoped<DialogService>();
+builder.Services.AddScoped<NotificationService>();
 
 var app = builder.Build();
 

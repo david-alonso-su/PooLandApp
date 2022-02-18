@@ -21,6 +21,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Blazor.Geolocation\AspNetMonsters.Blazor.Geolocation\AspNetMonsters.Blazor.Geolocation.csproj" />
     <ProjectReference Include="..\BlazorLeaflet\BlazorLeaflet\BlazorLeaflet\BlazorLeaflet.csproj" />
   </ItemGroup>
 
