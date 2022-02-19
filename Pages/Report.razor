@@ -46,7 +46,7 @@
                                 <h4 class="mb-4">Photo:</h4>
                                 <RadzenFileInput @bind-Value=@data.Photo TValue="string" Class="w-100"
                                                  Change=@(args => OnChangePhoto(args, "FileInput")) Error=@(args => OnErrorPhoto(args, "FileInput")) 
-                                                 MaxFileSize=1024 />
+                                                 MaxFileSize=@(10*1024*1024) MaxWidth=100 MaxHeight=100/>
                             </RadzenCard>
                         </div>
                     </div>
