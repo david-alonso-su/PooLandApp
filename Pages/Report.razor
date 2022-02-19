@@ -12,58 +12,87 @@
 
 <div class="row">
 
-    <RadzenTemplateForm Data="@data" Submit="@((FormData args) => { SubmitForm(args); })">
-        <div class="row">
-            <div class="col">
-                <RadzenFieldset Text="Poo Data">
-                    <div class="row mb-2">
-                        <div class="col-4 align-items-center d-flex">
-                            <RadzenLabel Text="Description" />
+    @if (!IsFormSubmiting && !IsFormSubmited)
+    {
+        <RadzenTemplateForm Data="@data" Submit="@((FormData args) => { SubmitForm(args); })">
+            <div class="row">
+                <div class="col">
+                    <RadzenFieldset Text="Poo Data">
+                        <div class="row mb-2">
+                            <div class="col-4 align-items-center d-flex">
+                                <RadzenLabel Text="Description" />
+                            </div>
+                            <div class="col-8">
+                                <RadzenTextBox Name="Description" @bind-Value="data.Description" Class="w-100" />
+                            </div>
                         </div>
-                        <div class="col-8">
-                            <RadzenTextBox Name="Description" @bind-Value="data.Description" Class="w-100" />
+                        <div class="row mb-5">
+                            <div class="align-items-center d-flex col-2">
+                                <RadzenLabel Text="Location" />
+                            </div>
+                            <div class="col-4  d-flex">
+                                <RadzenTextBox Name="Latitude" @bind-Value="data.strLatitude" Disabled="true" />
+                                <RadzenRequiredValidator Component="Latitude" Text="Latitude required" Popup=true Style="position: absolute" />
+                            </div>
+                            <div class="col-4  d-flex">
+                                <RadzenTextBox Name="Longitude" @bind-Value="data.strLongitude" Disabled="true" Min=0.0001m />
+                                <RadzenRequiredValidator Component="Longitude" Text="Longitude required" Popup=true Style="position: absolute" />
+                            </div>
+                            <div class="col-2  d-flex">
+                                <RadzenButton ButtonStyle="ButtonStyle.Secondary" Icon="add_location" Text="Change" Click=@ChangePosition />
+                            </div>
                         </div>
-                    </div>
-                    <div class="row mb-5">
-                        <div class="align-items-center d-flex col-2">
-                            <RadzenLabel Text="Location" />
+                        <div class="row px-3">
+                            <div class="col-lg-6 offset-lg-3 p-3">
+                                <RadzenCard>
+                                    <h4 class="mb-4">Photo:</h4>
+                                    <RadzenFileInput @bind-Value=@data.Photo TValue="string" Class="w-100"
+                                                 Change=@(args => OnChangePhoto(args, "FileInput")) Error=@(args => OnErrorPhoto(args, "FileInput"))
+                                                 MaxFileSize=@(10*1024*1024) MaxWidth=100 MaxHeight=100 />
+                                </RadzenCard>
+                            </div>
                         </div>
-                        <div class="col-4  d-flex">
-                            <RadzenTextBox Name="Latitude" @bind-Value="data.strLatitude" Disabled="true" />
-                            <RadzenRequiredValidator Component="Latitude" Text="Latitude required" Popup=true Style="position: absolute" />
+                        <div class="row justify-content-center">
+                            <div class="col-12 d-flex align-items-end justify-content-center">
+                                <RadzenButton ButtonType="ButtonType.Submit" Icon="save" Text="Send" />
+                            </div>
                         </div>
-                        <div class="col-4  d-flex">
-                            <RadzenTextBox Name="Longitude" @bind-Value="data.strLongitude" Disabled="true" Min=0.0001m />
-                            <RadzenRequiredValidator Component="Longitude" Text="Longitude required" Popup=true Style="position: absolute" />
-                        </div>
-                        <div class="col-2  d-flex">
-                            <RadzenButton ButtonStyle="ButtonStyle.Secondary" Icon="add_location" Text="Change" Click=@ChangePosition />
-                        </div>
-                    </div>
-                    <div class="row px-3">
-                        <div class="col-lg-6 offset-lg-3 p-3">
-                            <RadzenCard>
-                                <h4 class="mb-4">Photo:</h4>
-                                <RadzenFileInput @bind-Value=@data.Photo TValue="string" Class="w-100"
-                                                 Change=@(args => OnChangePhoto(args, "FileInput")) Error=@(args => OnErrorPhoto(args, "FileInput")) 
-                                                 MaxFileSize=@(10*1024*1024) MaxWidth=100 MaxHeight=100/>
-                            </RadzenCard>
-                        </div>
-                    </div>
-                    <div class="row justify-content-center">
-                        <div class="col-12 d-flex align-items-end justify-content-center">
-                            <RadzenButton ButtonType="ButtonType.Submit" Icon="save" Text="Send" />
-                        </div>
-                    </div>
-                </RadzenFieldset>
+                    </RadzenFieldset>
+                </div>
             </div>
+        </RadzenTemplateForm>
+    }
+    else if (IsFormSubmiting && !IsFormSubmited)
+    {
+        <RadzenProgressBar Value="100" ShowValue="false" Mode="ProgressBarMode.Indeterminate" />
+    }
+    else if (!IsFormSubmiting && IsFormSubmited)
+    {
+        <div class="col">
+            <RadzenCard>
+            @if (!IsFormSubmitedError)
+            {
+                <RadzenIcon Icon="check" IconStyle=IconStyle.Success/>
+                <RadzenBadge BadgeStyle="BadgeStyle.Success" Text="Poo Uploaded"/>
+                <RadzenLink Path="mapview" Text="Go to Map page" />
+            }
+            else
+            {
+                <RadzenIcon Icon="error" IconStyle=IconStyle.Danger />
+                <RadzenBadge BadgeStyle="BadgeStyle.Danger" Text="Sorry something went wrong"/>
+                <RadzenLink Path="report" Text="Try it again" />
+            }
+            </RadzenCard>
         </div>
-    </RadzenTemplateForm>
+    }
+
 
 </div>
 
 @code {
-
+    bool IsFormSubmiting = false;
+    bool IsFormSubmited = false;
+    bool IsFormSubmitedError = false;
     FormData data = new FormData();
 
     public class FormData
@@ -77,7 +106,6 @@
             }
             set
             {
-
                 Latitude = Convert.ToSingle(value);
             }
         }
@@ -89,7 +117,6 @@
             }
             set
             {
-
                 Longitude = Convert.ToSingle(value);
             }
         }
@@ -105,6 +132,7 @@
 
     async Task SubmitForm(FormData arg)
     {
+        IsFormSubmiting = true;
         if (arg.Latitude == 0 || arg.Longitude == 0)
         {
             var message = new NotificationMessage { Severity = NotificationSeverity.Error, Summary = "Invalid Coordinates", Detail = "Invalid Coordinates" };
@@ -114,13 +142,11 @@
 
         var poo = new Poodatum
             {
-
                 Date = DateTime.UtcNow,
                 Description = arg.Description,
                 Latitude = arg.Latitude,
                 Longitude = arg.Longitude,
                 Photo = arg.Photo
-
             };
 
         try
@@ -130,7 +156,16 @@
         }
         catch (Exception ex)
         {
+
+            IsFormSubmitedError = true;
             Console.WriteLine(ex.ToString());
+        }
+        finally
+        {
+            IsFormSubmiting = false;
+            IsFormSubmited = true;
+            await InvokeAsync( () => StateHasChanged());
+            IsFormSubmited = true;
         }
     }
 
@@ -168,7 +203,7 @@
     void OnErrorPhoto(UploadErrorEventArgs args, string name)
     {
         Console.WriteLine($"{args.Message}");
-         var message = new NotificationMessage { Severity = NotificationSeverity.Error, Summary = "Error Uploading Photo", Detail = args.Message };
-            NotificationService.Notify(message);
+        var message = new NotificationMessage { Severity = NotificationSeverity.Error, Summary = "Error Uploading Photo", Detail = args.Message };
+        NotificationService.Notify(message);
     }
 }

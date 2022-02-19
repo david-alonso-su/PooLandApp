@@ -84,25 +84,31 @@ else
                     Attribution = leafletOptions.CurrentValue.Attribution
                 });
 
-            //MarkerCluster Not work on delete icons.
-            //MapComponent.AddLayer(new MarkerClusterGroup());
+        //MarkerCluster Not work on delete icons.
+        //MapComponent.AddLayer(new MarkerClusterGroup());
 
-            await LoadMarkers(PooData.Where(x => x.Date > DateTime.UtcNow.AddDays(-dataOptions.CurrentValue.DefaultStartDaysAgo)));
+        await LoadMarkers(PooData.Where(x => x.Date > DateTime.UtcNow.AddDays(-dataOptions.CurrentValue.DefaultStartDaysAgo)));
 
         };
     }
 
     async void OnChangeWeeksAgo(IEnumerable<int> value)
     {
-        var listValues = value.ToList();
-        var fromWeekAgo = listValues[0] * dataOptions.CurrentValue.DaysGrouping;
-        var toWeekAgo = listValues[1] * dataOptions.CurrentValue.DaysGrouping;
-        fromWeekAgoDisplay = Math.Abs(listValues[0]);
-        toWeekAgoDisplay = Math.Abs(listValues[1]);
-        Console.WriteLine($"From {fromWeekAgoDisplay} To {toWeekAgoDisplay}");
-        await LoadMarkerWait(PooData.Where(x => x.Date > DateTime.UtcNow.AddDays(fromWeekAgo)
-                                        && x.Date < DateTime.UtcNow.AddDays(toWeekAgo)));
-
+        try
+        {
+            var listValues = value.ToList();
+            var fromWeekAgo = listValues[0] * dataOptions.CurrentValue.DaysGrouping;
+            var toWeekAgo = listValues[1] * dataOptions.CurrentValue.DaysGrouping;
+            fromWeekAgoDisplay = Math.Abs(listValues[0]);
+            toWeekAgoDisplay = Math.Abs(listValues[1]);
+            Console.WriteLine($"From {fromWeekAgoDisplay} To {toWeekAgoDisplay}");
+            await LoadMarkerWait(PooData.Where(x => x.Date > DateTime.UtcNow.AddDays(fromWeekAgo)
+                                            && x.Date < DateTime.UtcNow.AddDays(toWeekAgo)));
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.ToString());
+        }
     }
 
     async Task ClearMarkers()
