@@ -20,7 +20,7 @@ else
         <p>Latitude: @(Coordinates.Lat)</p>
         <p>Longitude:@(Coordinates.Lng)</p>
     </div>
-    <div class="row" style="height:50vh;">
+    <div class="row" style="height:60vh;">
         <LeafletMap Map="MapComponent" />
     </div>
     <div class="row">
@@ -48,13 +48,14 @@ else
         var MaxBounsUp = new LatLng(leafletOptions.CurrentValue.MaxBounds.Up.Latitude, leafletOptions.CurrentValue.MaxBounds.Up.Longitude);
         var MaxBounsDown = new LatLng(leafletOptions.CurrentValue.MaxBounds.Down.Latitude, leafletOptions.CurrentValue.MaxBounds.Down.Longitude);
 
+        if (Coordinates.Lat == 0 || Coordinates.Lng == 0)
+            Coordinates = new LatLng(leafletOptions.CurrentValue.Center.Latitude, leafletOptions.CurrentValue.Center.Longitude);
+
         MapComponent = new Map(jsRuntime)
             {
-
-                Center = new LatLng(leafletOptions.CurrentValue.Center.Latitude, leafletOptions.CurrentValue.Center.Longitude),
-                Zoom = leafletOptions.CurrentValue.Zoom,
+                Center = Coordinates,
+                Zoom = 15f,
                 MaxBounds = new Tuple<LatLng, LatLng>(MaxBounsUp, MaxBounsDown)
-
             };
 
         MapComponent.OnInitialized += async () =>
@@ -64,8 +65,6 @@ else
                     UrlTemplate = leafletOptions.CurrentValue.UrlTemplate,
                     Attribution = leafletOptions.CurrentValue.Attribution
                 });
-
-
             marker = new Marker(Coordinates)
                 {
                     Icon = new Icon
@@ -78,9 +77,7 @@ else
 
             marker.OnDrag += async (a, b) =>
             {
-
                 markerLatLng = b.LatLng;
-
             };
 
             marker.OnDragEnd += async (a, b) =>
@@ -89,21 +86,17 @@ else
                 if (result)
                 {
                     markerInsideBounds = true;
-                    Coordinates.Lat = markerLatLng.Lat;
-                    Coordinates.Lng = markerLatLng.Lng;
-                   
+                    Coordinates = markerLatLng;
                 }
                 else
                 {
                     markerInsideBounds = false;
-                    var message = new NotificationMessage { Style = "position: absolute; left: -1000px;", Severity = NotificationSeverity.Error, Summary = "Out Of boundaries", Detail = "Out of boundaries", Duration = 40000 };
+                    var message = new NotificationMessage { Severity = NotificationSeverity.Error, Summary = "Out Of boundaries", Detail = "Out of boundaries" };
                     NotificationService.Notify(message);
                 }
-                 StateHasChanged();
+                await InvokeAsync( () => StateHasChanged());
             };
-
             MapComponent.AddLayer(marker);
         };
-
     }
 }
