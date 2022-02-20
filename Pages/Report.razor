@@ -5,6 +5,7 @@
 @using BlazorLeaflet.Models
 @using Microsoft.EntityFrameworkCore
 @using PooLandApp.Data
+@using Texnomic.Blazor.hCaptcha
 @inject LocationService LocationService
 @inject DialogService DialogService
 @inject PooLandDbContext pooContext
@@ -35,7 +36,7 @@
                                 <RadzenRequiredValidator Component="Latitude" Text="Latitude required" Popup=true Style="position: absolute" />
                             </div>
                             <div class="col-4  d-flex">
-                                <RadzenTextBox Name="Longitude" @bind-Value="data.strLongitude" Disabled="true" Min=0.0001m />
+                                <RadzenTextBox Name="Longitude" @bind-Value="data.strLongitude" Disabled="true" />
                                 <RadzenRequiredValidator Component="Longitude" Text="Longitude required" Popup=true Style="position: absolute" />
                             </div>
                             <div class="col-2  d-flex">
@@ -51,6 +52,14 @@
                                                  MaxFileSize=@(10*1024*1024) MaxWidth=100 MaxHeight=100 />
                                 </RadzenCard>
                             </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-lg-6 offset-lg-3 p-3">
+                                <HCaptcha Callback=hCaptchaCallback/>
+                                <RadzenNumeric Name="HCaptcha" @bind-Value="data.IsCaptchaValid" Visible="false"/>
+                                <RadzenNumericRangeValidator Min="1" Max="1" Component="HCaptcha" Text="HCaptcha required" Popup=true Style="position: absolute" />
+                           
+                            </div>  
                         </div>
                         <div class="row justify-content-center">
                             <div class="col-12 d-flex align-items-end justify-content-center">
@@ -80,7 +89,7 @@
             {
                 <RadzenIcon Icon="error" IconStyle=IconStyle.Danger />
                 <RadzenBadge BadgeStyle="BadgeStyle.Danger" Text="Sorry something went wrong"/>
-                <RadzenLink Path="report" Text="Try it again" />
+                <RadzenLink Path="report" Text="Try it again"/>
             }
             </RadzenCard>
         </div>
@@ -95,34 +104,12 @@
     bool IsFormSubmitedError = false;
     FormData data = new FormData();
 
-    public class FormData
+    private bool IsCaptchaValid { get; set; }
+
+    protected void hCaptchaCallback(bool Result)
     {
-        public string? Description { get; set; }
-        public string? strLatitude
-        {
-            get
-            {
-                return Latitude.ToString();
-            }
-            set
-            {
-                Latitude = Convert.ToSingle(value);
-            }
-        }
-        public string? strLongitude
-        {
-            get
-            {
-                return Longitude.ToString();
-            }
-            set
-            {
-                Longitude = Convert.ToSingle(value);
-            }
-        }
-        public float Latitude { get; set; }
-        public float Longitude { get; set; }
-        public string? Photo { get; set; }
+        IsCaptchaValid = Result;
+        data.IsCaptchaValid = Convert.ToInt16(IsCaptchaValid);
     }
 
     protected override async Task OnInitializedAsync()
@@ -136,6 +123,13 @@
         if (arg.Latitude == 0 || arg.Longitude == 0)
         {
             var message = new NotificationMessage { Severity = NotificationSeverity.Error, Summary = "Invalid Coordinates", Detail = "Invalid Coordinates" };
+            NotificationService.Notify(message);
+            return;
+        }
+
+        if (arg.IsCaptchaValid == 0)
+        {
+            var message = new NotificationMessage { Severity = NotificationSeverity.Error, Summary = "Invalid Captcha", Detail = "Invalid Captcha" };
             NotificationService.Notify(message);
             return;
         }

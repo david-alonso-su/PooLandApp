@@ -6,6 +6,7 @@ using Microsoft.Extensions.Options;
 using PooLandApp.Data;
 using PooLandApp.Server;
 using Radzen;
+using Texnomic.Blazor.hCaptcha.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -31,6 +32,13 @@ builder.Services.Configure<DataOptions>(builder.Configuration.GetSection("DataOp
 builder.Services.AddScoped<LocationService>();
 builder.Services.AddScoped<DialogService>();
 builder.Services.AddScoped<NotificationService>();
+
+builder.Services.AddHttpClient();
+builder.Services.AddHCaptcha(Options =>
+{
+    Options.SiteKey = builder.Configuration["hCaptcha:SiteKey"];
+    Options.Secret = builder.Configuration["hCaptcha:Secret"];
+});
 
 var app = builder.Build();
 
