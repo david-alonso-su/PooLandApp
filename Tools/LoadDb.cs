@@ -23,6 +23,17 @@ public static class LoadDb
         }
     }
 
+    public static async Task<bool> EnsureCreated(DbContextOptions<PooLandDbContext> options) 
+    {
+        
+        var builder = new DbContextOptionsBuilder<PooLandDbContext>(options);
+
+        using var context = new PooLandDbContext(builder.Options);
+        // result is true if the database had to be created
+
+        return await context.Database.EnsureCreatedAsync();
+    }
+
 
 }
 

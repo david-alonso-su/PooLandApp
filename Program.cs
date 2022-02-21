@@ -1,6 +1,4 @@
 using AspNetMonsters.Blazor.Geolocation;
-using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Web;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using PooLandApp.Data;
@@ -17,12 +15,12 @@ builder.Services.AddServerSideBlazor();
 
 #if DEBUG
 builder.Services.AddDbContext<PooLandDbContext>(options =>
-   options.UseSqlServer(builder.Configuration["ConnectionStrings:PooLandDb"])
+   options.UseSqlite($@"DataSource={builder.Configuration["DbName"]};")
      .EnableSensitiveDataLogging());
 #else
 builder.Services.AddDbContext<PooLandDbContext>(options =>
-   options.UseSqlServer(builder.Configuration["ConnectionStrings:PooLandDb"])
-    );
+   options.UseSqlite($@"DataSource={builder.Configuration["DbName"]};")
+     .EnableSensitiveDataLogging());
 #endif
 
 
@@ -42,14 +40,19 @@ builder.Services.AddHCaptcha(Options =>
 
 var app = builder.Build();
 
-#if DEBUG
-// this section sets up and seeds the database. It would NOT normally
-// be done this way in production. It is here to make the sample easier,
-// i.e. clone, set connection string and run.
+
 await using var scope = app.Services.GetRequiredService<IServiceScopeFactory>().CreateAsyncScope();
 var options = scope.ServiceProvider.GetRequiredService<DbContextOptions<PooLandDbContext>>();
+#if DEBUG
+// this section sets up and seeds the database. 
 var maxBound = scope.ServiceProvider.GetService<IOptionsMonitor<LeafletOptions>>().CurrentValue.MaxBounds;
 await LoadDb.LoadDbData(options, maxBound, DateTime.UtcNow.AddYears(-1), 1000);
+#else
+//Ensure DB has the last model
+if (!await LoadDb.EnsureCreated(options))
+{
+    throw new Exception("DataBase Error");
+}
 #endif
 
 // Configure the HTTP request pipeline.
