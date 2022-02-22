@@ -1,10 +1,12 @@
-using AspNetMonsters.Blazor.Geolocation;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 using PooLandApp.Data;
 using PooLandApp.Server;
+using AspNetMonsters.Blazor.Geolocation;
 using Radzen;
 using Texnomic.Blazor.hCaptcha.Extensions;
+using BlazorStrap;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -37,6 +39,8 @@ builder.Services.AddHCaptcha(Options =>
     Options.SiteKey = builder.Configuration["hCaptcha:SiteKey"];
     Options.Secret = builder.Configuration["hCaptcha:Secret"];
 });
+
+builder.Services.AddBlazorStrap();
 
 var app = builder.Build();
 

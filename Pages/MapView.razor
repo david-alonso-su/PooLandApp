@@ -1,16 +1,18 @@
 ﻿@page "/mapview"
 @using PooLandApp.Server
 @using PooLandApp.Data
-@using Microsoft.EntityFrameworkCore
 @using BlazorLeaflet
 @using BlazorLeaflet.Models
 @using Radzen
 @using Radzen.Blazor
+@using BlazorStrap
+@using Microsoft.EntityFrameworkCore
 @using Microsoft.Extensions.Options
-@inject IJSRuntime jsRuntime
 @inject PooLandDbContext pooContext
 @inject IOptionsMonitor<LeafletOptions> leafletOptions
 @inject IOptionsMonitor<DataOptions> dataOptions
+@inject IJSRuntime jsRuntime
+
 
 @if (MapComponent == null)
 {
@@ -18,16 +20,21 @@
 }
 else
 {
-    <div class="row" style="height:90vh;">
-        <LeafletMap Map="MapComponent" />
-    </div>
-    <div class="row">
-        <RadzenCard>
-            <h4 class="mb-4">Weeks Ago From  @fromWeekAgoDisplay To @toWeekAgoDisplay</h4>
-            <RadzenSlider Range="true" @bind-Value=@weeksAgo TValue="IEnumerable<int>" Min="@fromWeeksAgo" Max="0" Step=1 Change=@(args => OnChangeWeeksAgo(args)) Class="w-100" />
-        </RadzenCard>
-    </div>
-
+    <BSContainer Container="Container.Fluid" Padding="Padding.None" >
+        <BSRow style="height: 80vh;">  
+           <BSCol >
+                <LeafletMap Map="MapComponent"/>
+            </BSCol>
+        </BSRow>  
+        <BSRow style="height: 20vh;">     
+           <BSCol>
+                <RadzenCard>
+                    <BSLabel> Weeks Ago From  @fromWeekAgoDisplay To @toWeekAgoDisplay</BSLabel>
+                    <RadzenSlider Range="true" @bind-Value=@weeksAgo TValue="IEnumerable<int>" Min="@fromWeeksAgo" Max="0" Step=1 Change=@(args => OnChangeWeeksAgo(args)) Class="w-100" />
+                </RadzenCard>
+            </BSCol>
+        </BSRow>
+    </BSContainer>
 }
 
 
@@ -138,7 +145,6 @@ else
         }
     }
 
-
     async Task LoadMarkers(IEnumerable<Poodatum> pooData)
     {
         Console.WriteLine($"Start Load markers From {fromWeekAgoDisplay} To {toWeekAgoDisplay} at {DateTime.UtcNow}");
@@ -147,6 +153,11 @@ else
 
         await Parallel.ForEachAsync(pooData, async (poo, cancellationToken) =>
         {
+            var popupContent = new LeafletPopupLayout
+            {
+                Description = poo.Description,
+                Photo = poo.Photo
+            };
             var marker = new Marker(poo.Latitude, poo.Longitude)
                 {
                     Icon = new Icon
@@ -154,7 +165,7 @@ else
                         Url = "poo.png",
                         ClassName = "map-icon",
                     },
-                    Popup = new Popup { Content = (new LeafletPopupLayout() { Description = poo.Description, Photo = poo.Photo }).GetHtml() },
+                    Popup = new Popup { Content = popupContent.GetHtml() },
                     Tooltip = new BlazorLeaflet.Models.Tooltip { Content = poo.Description },
                 };
             MapComponent.AddLayer(marker);

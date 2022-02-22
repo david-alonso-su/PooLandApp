@@ -364,3 +364,6 @@ FodyWeavers.xsd
 /poolanddb.db-wal
 /poolanddb.db-shm
 /poolanddb.db
+/Poolanddb_dev.db-wal
+/Poolanddb_dev.db-shm
+/Poolanddb_dev.db
