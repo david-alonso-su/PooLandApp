@@ -16,18 +16,18 @@ builder.Services.AddServerSideBlazor();
 
 
 #if DEBUG
-builder.Services.AddDbContext<PooLandDbContext>(options =>
-   options.UseSqlite($@"DataSource={builder.Configuration["DbName"]};")
+builder.Services.AddDbContextFactory<PooLandDbContext>(options =>
+   options.UseSqlite($"DataSource={builder.Configuration["DbName"]};")
      .EnableSensitiveDataLogging());
 #else
-builder.Services.AddDbContext<PooLandDbContext>(options =>
-   options.UseSqlite($@"DataSource={builder.Configuration["DbName"]};")
-     .EnableSensitiveDataLogging());
+builder.Services.AddDbContextFactory<PooLandDbContext>(options =>
+   options.UseSqlite($"DataSource={builder.Configuration["DbName"]};"));
 #endif
 
 
 builder.Services.Configure<LeafletOptions>(builder.Configuration.GetSection("Leaflet"));
 builder.Services.Configure<DataOptions>(builder.Configuration.GetSection("DataOptions"));
+builder.Services.Configure<AdminBoardOptions>(builder.Configuration.GetSection("AdminBoard"));
 
 builder.Services.AddScoped<LocationService>();
 builder.Services.AddScoped<DialogService>();
@@ -53,10 +53,10 @@ var maxBound = scope.ServiceProvider.GetService<IOptionsMonitor<LeafletOptions>>
 await LoadDb.LoadDbData(options, maxBound, DateTime.UtcNow.AddYears(-1), 1000);
 #else
 //Ensure DB has the last model
-if (!await LoadDb.EnsureCreated(options))
-{
-    throw new Exception("DataBase Error");
-}
+if (await LoadDb.EnsureCreated(options))
+    Console.WriteLine("Database created");
+else
+    Console.WriteLine("Database already exists");
 #endif
 
 // Configure the HTTP request pipeline.

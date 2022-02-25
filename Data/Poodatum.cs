@@ -11,5 +11,6 @@ namespace PooLandApp.Data
         public string? Photo { get; set; } = null!;
         public float Latitude { get; set; }
         public float Longitude { get; set; }
+        public bool Visible { get; set; }
     }
 }

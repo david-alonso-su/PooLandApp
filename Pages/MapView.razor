@@ -8,7 +8,7 @@
 @using BlazorStrap
 @using Microsoft.EntityFrameworkCore
 @using Microsoft.Extensions.Options
-@inject PooLandDbContext pooContext
+@inject IDbContextFactory<PooLandDbContext> DbFactory
 @inject IOptionsMonitor<LeafletOptions> leafletOptions
 @inject IOptionsMonitor<DataOptions> dataOptions
 @inject IJSRuntime jsRuntime
@@ -20,14 +20,14 @@
 }
 else
 {
-    <BSContainer Container="Container.Fluid" Padding="Padding.None" >
-        <BSRow style="height: 80vh;">  
-           <BSCol >
-                <LeafletMap Map="MapComponent"/>
+    <BSContainer Container="Container.Fluid" Padding="Padding.None">
+        <BSRow style="height: 80vh;">
+            <BSCol>
+                <LeafletMap Map="MapComponent" />
             </BSCol>
-        </BSRow>  
-        <BSRow style="height: 20vh;">     
-           <BSCol>
+        </BSRow>
+        <BSRow style="height: 20vh;">
+            <BSCol>
                 <RadzenCard>
                     <BSLabel> Weeks Ago From  @fromWeekAgoDisplay To @toWeekAgoDisplay</BSLabel>
                     <RadzenSlider Range="true" @bind-Value=@weeksAgo TValue="IEnumerable<int>" Min="@fromWeeksAgo" Max="0" Step=1 Change=@(args => OnChangeWeeksAgo(args)) Class="w-100" />
@@ -67,19 +67,18 @@ else
         fromWeekAgoDisplay = Math.Abs(startWeekAgo);
         toWeekAgoDisplay = 0;
 
-        PooData = await pooContext.Poodata.Where(x => x.Date > DateTime.UtcNow.AddDays(-MaxDaysAgo)).ToListAsync();
+        using var pooContext = DbFactory.CreateDbContext();
 
+        PooData = await pooContext.Poodata.Where(x => x.Date > DateTime.UtcNow.AddDays(-MaxDaysAgo) && x.Visible == true).ToListAsync();
 
         var MaxBounsUp = new LatLng(leafletOptions.CurrentValue.MaxBounds.Up.Latitude, leafletOptions.CurrentValue.MaxBounds.Up.Longitude);
         var MaxBounsDown = new LatLng(leafletOptions.CurrentValue.MaxBounds.Down.Latitude, leafletOptions.CurrentValue.MaxBounds.Down.Longitude);
 
         MapComponent = new Map(jsRuntime)
             {
-
                 Center = new LatLng(leafletOptions.CurrentValue.Center.Latitude, leafletOptions.CurrentValue.Center.Longitude),
                 Zoom = leafletOptions.CurrentValue.Zoom,
                 MaxBounds = new Tuple<LatLng, LatLng>(MaxBounsUp, MaxBounsDown)
-
             };
 
         MapComponent.OnInitialized += async () =>
@@ -89,12 +88,9 @@ else
                     UrlTemplate = leafletOptions.CurrentValue.UrlTemplate,
                     Attribution = leafletOptions.CurrentValue.Attribution
                 });
-
-        //MarkerCluster Not work on delete icons.
-        //MapComponent.AddLayer(new MarkerClusterGroup());
-
-        await LoadMarkers(PooData.Where(x => x.Date > DateTime.UtcNow.AddDays(-dataOptions.CurrentValue.DefaultStartDaysAgo)));
-
+            //MarkerCluster Not work on delete icons.
+            //MapComponent.AddLayer(new MarkerClusterGroup());
+            await LoadMarkers(PooData.Where(x => x.Date > DateTime.UtcNow.AddDays(-dataOptions.CurrentValue.DefaultStartDaysAgo)));
         };
     }
 
@@ -153,11 +149,17 @@ else
 
         await Parallel.ForEachAsync(pooData, async (poo, cancellationToken) =>
         {
-            var popupContent = new LeafletPopupLayout
-            {
-                Description = poo.Description,
-                Photo = poo.Photo
-            };
+            var popupContent = new LeafletPopupLayout(DbFactory)
+                {
+                    Description = poo.Description,
+                    Photo = poo.Photo,
+                    Id = poo.Id
+                };
+
+            var popup = new Popup
+                {
+                    Content = popupContent.GetHtml()
+                };
             var marker = new Marker(poo.Latitude, poo.Longitude)
                 {
                     Icon = new Icon
@@ -165,7 +167,7 @@ else
                         Url = "poo.png",
                         ClassName = "map-icon",
                     },
-                    Popup = new Popup { Content = popupContent.GetHtml() },
+                    Popup = popup,
                     Tooltip = new BlazorLeaflet.Models.Tooltip { Content = poo.Description },
                 };
             MapComponent.AddLayer(marker);
@@ -178,4 +180,6 @@ else
         }
         Console.WriteLine($"End Load markers at {DateTime.UtcNow}");
     }
+
+
 }

@@ -45,6 +45,8 @@ namespace PooLandApp.Data
                 entity.Property(e => e.Longitude).HasColumnName("longitude");
 
                 entity.Property(e => e.Photo).HasColumnName("photo");
+
+                entity.Property(e => e.Visible).HasColumnName("visible");
             });
 
             OnModelCreatingPartial(modelBuilder);

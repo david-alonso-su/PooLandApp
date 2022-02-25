@@ -1,0 +1,168 @@
+﻿@page "/adminboard"
+@using PooLandApp.Data
+@using PooLandApp.Server
+@using Radzen
+@using Radzen.Blazor
+@using BlazorStrap
+@using Microsoft.EntityFrameworkCore
+@using Microsoft.Extensions.Options
+@inject IDbContextFactory<PooLandDbContext> DbFactory
+@inject IOptionsMonitor<AdminBoardOptions> AdminBoardOptions
+
+
+@if (!PassOk)
+{
+    <BSContainer Container="Container.Fluid">
+        <RadzenTemplateForm Data="@formData" Submit="@((AdminBoardOptions args) => { SubmitForm(args); })">
+
+            <RadzenFieldset Text="Enter Password">
+                <BSRow MarginBottom="Margins.ExtraSmall" Justify="Justify.Start">
+                    <BSCol Column="4" Align="Align.Center">
+                        <RadzenLabel Text="Password" />
+                    </BSCol>
+                    <BSCol Column="8">
+                        <RadzenTextBox Name="Password" @bind-Value="formData.Password" Style="width:100%; display: block" />
+                    </BSCol>
+                </BSRow>
+                 <BSRow Justify="Justify.Center" MarginTop="Margins.Medium">
+                    <BSCol ColumnMedium="12" Align="Align.End" Class="text-center">
+                        <RadzenButton ButtonType="ButtonType.Submit" Icon="save" Text="Send" />
+                    </BSCol>
+                </BSRow>
+            </RadzenFieldset>
+        </RadzenTemplateForm>
+    </BSContainer>
+}
+else
+{
+    <RadzenDataGrid @ref="poodataGrid" AllowFiltering="true" AllowColumnResize="true" FilterMode="FilterMode.Simple" AllowSorting="true" PageSize="7" AllowPaging="true" PagerHorizontalAlign="HorizontalAlign.Left" ShowPagingSummary="true"
+                Data="@poodata" TItem="Poodatum" ColumnWidth="300px" LogicalFilterOperator="LogicalFilterOperator.Or"
+                EditMode="DataGridEditMode.Single" RowUpdate="@OnUpdateRow">
+        <Columns>
+            <RadzenDataGridColumn TItem="Poodatum" Property="Id" Filterable="false" Title="ID" Frozen="true" Width="70px" TextAlign="TextAlign.Center" />
+            <RadzenDataGridColumn TItem="Poodatum" Title="Photo" Sortable="false" Filterable="false" Width="60px">
+                <Template Context="data">
+                    <RadzenImage Path="@data.Photo" style="width: 50px; border-radius: 8px;" />
+                </Template>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="Poodatum" Property="Description" Title="First Name" Width="200px">
+                <EditTemplate Context="poo">
+                    <RadzenTextBox @bind-Value="poo.Description" Style="width:100%; display: block" Name="Description" />
+                </EditTemplate>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="Poodatum" Property="Date" Title="Date" Width="140px">
+                <Template Context="poo">
+                    @String.Format("{0:d}", poo.Date)
+                </Template>
+                <EditTemplate Context="poo">
+                    <RadzenDatePicker @bind-Value="poo.Date" Style="width:100%" />
+                </EditTemplate>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="Poodatum" Property="Latitude" Title="Latitude" Filterable="false" Width="100px" />
+            <RadzenDataGridColumn TItem="Poodatum" Property="Longitude" Title="Longitude" Filterable="false" Width="100px" />
+            <RadzenDataGridColumn TItem="Poodatum" Property="Visible" Title="Visible" Width="40px">
+                <Template Context="data">
+                    <RadzenCheckBox @bind-Value=@data.Visible Name="Visible" TValue="bool" Disabled="true" />
+                </Template>
+                <EditTemplate Context="poo">
+                    <RadzenCheckBox @bind-Value="poo.Visible" Name="Visible" TValue="bool" />
+                </EditTemplate>
+            </RadzenDataGridColumn>
+            @*Buttons sections*@
+            <RadzenDataGridColumn TItem="Poodatum" Context="adminboardEditing" Filterable="false" Sortable="false" TextAlign="TextAlign.Center" Width="120px">
+                <Template Context="order">
+                    <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Light" Class="m-1" Click="@(args => EditRow(order))" @onclick:stopPropagation="true">
+                    </RadzenButton>
+                </Template>
+                <EditTemplate Context="order">
+                    <RadzenButton Icon="check" ButtonStyle="ButtonStyle.Primary" Class="m-1" Click="@((args) => SaveRow(order))">
+                    </RadzenButton>
+                    <RadzenButton Icon="close" ButtonStyle="ButtonStyle.Light" Class="m-1" Click="@((args) => CancelEdit(order))">
+                    </RadzenButton>
+                </EditTemplate>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="Poodatum" Context="order" Filterable="false" Sortable="false" TextAlign="TextAlign.Center" Width="60px">
+                <Template Context="order">
+                    <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="delete" Size="ButtonSize.Small" Class="m-1" Click="@(args => DeleteRow(order))" @onclick:stopPropagation="true">
+                    </RadzenButton>
+                </Template>
+                <EditTemplate Context="order">
+                    <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="delete" Size="ButtonSize.Small" Class="m-1" Click="@(args => DeleteRow(order))">
+                    </RadzenButton>
+                </EditTemplate>
+            </RadzenDataGridColumn>
+        </Columns>
+    </RadzenDataGrid>
+}
+
+
+
+
+@code {
+    IEnumerable<Poodatum> poodata;
+    RadzenDataGrid<Poodatum> poodataGrid;
+
+    AdminBoardOptions formData = new AdminBoardOptions();
+    bool PassOk = false;
+    string Password;
+
+    async Task SubmitForm(AdminBoardOptions arg)
+    {
+        if (Password == arg.Password)
+        {
+            PassOk = true;
+            StateHasChanged();
+        }
+    }
+
+    protected override void OnInitialized()
+    {
+        using var pooContext = DbFactory.CreateDbContext();
+        poodata = pooContext.Poodata.OrderByDescending(x => x.Date).ToList();
+        Password = AdminBoardOptions.CurrentValue.Password;
+    }
+
+    async Task EditRow(Poodatum poo)
+    {
+        await poodataGrid.EditRow(poo);
+    }
+
+    void OnUpdateRow(Poodatum poo)
+    {
+        using var pooContext = DbFactory.CreateDbContext();
+        pooContext.Update(poo);
+        pooContext.SaveChanges();
+    }
+
+    async Task SaveRow(Poodatum poo)
+    {
+        await poodataGrid.UpdateRow(poo);
+    }
+
+    void CancelEdit(Poodatum poo)
+    {
+        using var pooContext = DbFactory.CreateDbContext();
+        poodataGrid.CancelEditRow(poo);
+        var pooEntry = pooContext.Entry(poo);
+        if (pooEntry.State == EntityState.Modified)
+        {
+            pooEntry.CurrentValues.SetValues(pooEntry.OriginalValues);
+            pooEntry.State = EntityState.Unchanged;
+        }
+    }
+
+    async Task DeleteRow(Poodatum poo)
+    {
+        if (poodata.Contains(poo))
+        {
+            using var pooContext = DbFactory.CreateDbContext();
+            pooContext.Remove<Poodatum>(poo);
+            pooContext.SaveChanges();
+            await poodataGrid.Reload();
+        }
+        else
+        {
+            poodataGrid.CancelEditRow(poo);
+        }
+    }
+}
