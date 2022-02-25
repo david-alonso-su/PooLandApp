@@ -11,6 +11,7 @@
 @inject DialogService DialogService
 @inject PooLandDbContext pooContext
 @inject NotificationService NotificationService
+@inject IJSRuntime JsRuntime
 
 
 
@@ -147,7 +148,8 @@ else if (!IsFormSubmiting && IsFormSubmited)
                 Description = arg.Description,
                 Latitude = arg.Latitude,
                 Longitude = arg.Longitude,
-                Photo = arg.Photo
+                Photo = arg.Photo,
+                Visible = true
             };
 
         try
@@ -170,12 +172,21 @@ else if (!IsFormSubmiting && IsFormSubmited)
         }
     }
 
+    public class WindowDimension
+    {
+        public int Width { get; set; }
+        public int Height { get; set; }
+    }
+
     public async Task ChangePosition()
     {
-
+        var dimension = await JsRuntime.InvokeAsync<WindowDimension>("getWindowDimensions");
+        var height = dimension.Height - 56;
+        var width = dimension.Width - 250;
+        
         var result = await DialogService.OpenAsync<MapLocation>("Pick poo location",
                new Dictionary<string, object>() { { "Coordinates", new LatLng(data.Latitude, data.Longitude) } },
-               new DialogOptions() { Width = "700px", Height = "570px", Resizable = true, Draggable = true });
+               new DialogOptions() { Width = $"{width}px", Height = $"{height}px", Resizable = true, Draggable = true  });
 
         if (result == null)
         {
