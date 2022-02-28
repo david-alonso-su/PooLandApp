@@ -8,6 +8,7 @@
 @using BlazorStrap
 @using Microsoft.EntityFrameworkCore
 @using Microsoft.Extensions.Options
+@using System.Drawing
 @inject IDbContextFactory<PooLandDbContext> DbFactory
 @inject IOptionsMonitor<LeafletOptions> leafletOptions
 @inject IOptionsMonitor<DataOptions> dataOptions
@@ -68,7 +69,6 @@ else
         toWeekAgoDisplay = 0;
 
         using var pooContext = DbFactory.CreateDbContext();
-
         PooData = await pooContext.Poodata.Where(x => x.Date > DateTime.UtcNow.AddDays(-MaxDaysAgo) && x.Visible == true).ToListAsync();
 
         var MaxBounsUp = new LatLng(leafletOptions.CurrentValue.MaxBounds.Up.Latitude, leafletOptions.CurrentValue.MaxBounds.Up.Longitude);
@@ -88,10 +88,19 @@ else
                     UrlTemplate = leafletOptions.CurrentValue.UrlTemplate,
                     Attribution = leafletOptions.CurrentValue.Attribution
                 });
+
+            NeighborhoodsShapes(MapComponent);
+
             //MarkerCluster Not work on delete icons.
             //MapComponent.AddLayer(new MarkerClusterGroup());
             await LoadMarkers(PooData.Where(x => x.Date > DateTime.UtcNow.AddDays(-dataOptions.CurrentValue.DefaultStartDaysAgo)));
         };
+    }
+
+    async void NeighborhoodsShapes(Map mapComponent)
+    {
+        using var pooContext = await DbFactory.CreateDbContextAsync();
+        MapData.NeighborhoodsShapes.Create(mapComponent, pooContext.Neighborhoods);
     }
 
     async void OnChangeWeeksAgo(IEnumerable<int> value)
@@ -160,7 +169,8 @@ else
                 {
                     Content = popupContent.GetHtml()
                 };
-            var marker = new Marker(poo.Latitude, poo.Longitude)
+            //var marker = new Marker(poo.Latitude, poo.Longitude)
+            var marker = new Marker((float)poo.Location.X, (float)poo.Location.Y)
                 {
                     Icon = new Icon
                     {
@@ -180,6 +190,4 @@ else
         }
         Console.WriteLine($"End Load markers at {DateTime.UtcNow}");
     }
-
-
 }

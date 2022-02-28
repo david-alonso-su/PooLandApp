@@ -17,6 +17,7 @@ namespace PooLandApp.Data
         }
 
         public virtual DbSet<Poodatum> Poodata { get; set; } = null!;
+        public virtual DbSet<Neighborhood> Neighborhoods { get; set; } = null!;
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -40,14 +41,21 @@ namespace PooLandApp.Data
                     .HasMaxLength(50)
                     .HasColumnName("description");
 
-                entity.Property(e => e.Latitude).HasColumnName("latitude");
-
-                entity.Property(e => e.Longitude).HasColumnName("longitude");
-
                 entity.Property(e => e.Photo).HasColumnName("photo");
 
                 entity.Property(e => e.Visible).HasColumnName("visible");
+
+                entity.Property(e => e.Location);
             });
+
+            modelBuilder.Entity<Neighborhood>(entity =>
+            {
+                entity.ToTable("neighborhood");
+                entity.Property(e => e.Id).HasColumnName("id");
+                entity.Property(e => e.Name).HasColumnName("description");
+                entity.Property(e => e.Coordinates);
+            });
+           
 
             OnModelCreatingPartial(modelBuilder);
         }

@@ -9,7 +9,7 @@
 @using BlazorStrap
 @inject LocationService LocationService
 @inject DialogService DialogService
-@inject PooLandDbContext pooContext
+@inject IDbContextFactory<PooLandDbContext> DbFactory
 @inject NotificationService NotificationService
 @inject IJSRuntime JsRuntime
 
@@ -146,14 +146,14 @@ else if (!IsFormSubmiting && IsFormSubmited)
             {
                 Date = DateTime.UtcNow,
                 Description = arg.Description,
-                Latitude = arg.Latitude,
-                Longitude = arg.Longitude,
+                Location = new NetTopologySuite.Geometries.Point(arg.Latitude,  arg.Longitude),
                 Photo = arg.Photo,
                 Visible = true
             };
 
         try
         {
+            using var pooContext = DbFactory.CreateDbContext();
             await pooContext.AddAsync(poo);
             await pooContext.SaveChangesAsync();
         }

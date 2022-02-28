@@ -17,11 +17,11 @@ builder.Services.AddServerSideBlazor();
 
 #if DEBUG
 builder.Services.AddDbContextFactory<PooLandDbContext>(options =>
-   options.UseSqlite($"DataSource={builder.Configuration["DbName"]};")
+   options.UseSqlite($"DataSource={builder.Configuration["DbName"]};", x => x.UseNetTopologySuite())
      .EnableSensitiveDataLogging());
 #else
 builder.Services.AddDbContextFactory<PooLandDbContext>(options =>
-   options.UseSqlite($"DataSource={builder.Configuration["DbName"]};"));
+   options.UseSqlite($"DataSource={builder.Configuration["DbName"]};", x => x.UseNetTopologySuite()));
 #endif
 
 

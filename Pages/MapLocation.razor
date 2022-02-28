@@ -1,13 +1,18 @@
 ﻿@page "/MapLocation/{Coordinates}"
 @using PooLandApp.Server
+@using PooLandApp.Data
 @using BlazorLeaflet
 @using BlazorLeaflet.Models
 @using Radzen
 @using Radzen.Blazor
+@using BlazorStrap
 @using Microsoft.Extensions.Options
+@using Microsoft.EntityFrameworkCore
+@using System.Drawing
 @inject Radzen.DialogService DialogService
 @inject NotificationService NotificationService
 @inject IOptionsMonitor<LeafletOptions> leafletOptions
+@inject IDbContextFactory<PooLandDbContext> DbFactory
 @inject IJSRuntime jsRuntime
 
 @if (MapComponent == null)
@@ -16,19 +21,30 @@
 }
 else
 {
-    <div class="row">
-        <p>Latitude: @(Coordinates.Lat)</p>
-        <p>Longitude:@(Coordinates.Lng)</p>
-    </div>
-    <div class="row" style="height:60vh;">
-        <LeafletMap Map="MapComponent" />
-    </div>
-    <div class="row">
-        <div class="col-md-12 text-right">
+    <BSRow>
+        <BSCol>
+            <BSLabel>Latitude: @(Coordinates.Lat)</BSLabel>
+        </BSCol>
+        <BSCol>
+            <BSLabel>Longitude:@(Coordinates.Lng)</BSLabel>
+        </BSCol>
+    </BSRow>
+    <BSRow>
+        <BSCol>
+            <BSLabel>Neighborhood:@(NeighborhoodName)</BSLabel>
+        </BSCol>
+    </BSRow>
+    <BSRow style="height: 60vh;">
+        <BSCol>
+            <LeafletMap Map="MapComponent" />
+        </BSCol>
+    </BSRow>
+    <BSRow>
+        <BSCol Class="text-center">
             <RadzenButton Click="@((args) => DialogService.Close(null))" ButtonStyle="ButtonStyle.Secondary" Text="Cancel" Style="width: 120px" Class="mr-1" />
             <RadzenButton Click="@((args) => DialogService.Close(Coordinates))" Text="OK" Style="width: 120px" Disabled=@(!markerInsideBounds) />
-        </div>
-    </div>
+        </BSCol>
+    </BSRow>
 }
 
 @code {
@@ -41,6 +57,7 @@ else
     Marker? marker;
 
     LatLng markerLatLng;
+    string NeighborhoodName;
     bool markerInsideBounds = false;
 
     protected override async Task OnInitializedAsync()
@@ -82,7 +99,7 @@ else
 
             marker.OnDragEnd += async (a, b) =>
             {
-                var result = await MapComponent.IsPositionInsideBounds(new Tuple<LatLng, LatLng>(MaxBounsUp, MaxBounsDown), markerLatLng);
+                var result = await IsPositionInNeighborhoods(markerLatLng);
                 if (result)
                 {
                     markerInsideBounds = true;
@@ -94,9 +111,26 @@ else
                     var message = new NotificationMessage { Severity = NotificationSeverity.Error, Summary = "Out Of boundaries", Detail = "Out of boundaries" };
                     NotificationService.Notify(message);
                 }
-                await InvokeAsync( () => StateHasChanged());
+                await InvokeAsync(() => StateHasChanged());
             };
             MapComponent.AddLayer(marker);
+
+            NeighborhoodsShapes(MapComponent);
         };
     }
+
+    async Task<bool> IsPositionInNeighborhoods(LatLng position)
+    {
+
+        using var pooContext = await DbFactory.CreateDbContextAsync();  
+        return MapData.GISFunctions.IsPositionInNeighborhoods(position, pooContext.Neighborhoods, out NeighborhoodName);
+    }
+
+    async void NeighborhoodsShapes(Map mapComponent)
+    {
+        using var pooContext = await DbFactory.CreateDbContextAsync();
+        MapData.NeighborhoodsShapes.Create(mapComponent, pooContext.Neighborhoods);
+    }
+
+
 }
