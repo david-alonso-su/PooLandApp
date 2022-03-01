@@ -1,9 +1,6 @@
 ﻿using NetTopologySuite.Geometries;
-using System;
-using System.Collections.Generic;
 
 namespace PooLandApp.Data;
-
 public partial class Poodatum
 {
     public int Id { get; set; }

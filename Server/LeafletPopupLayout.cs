@@ -3,13 +3,14 @@ using Microsoft.JSInterop;
 using PooLandApp.Data;
 
 namespace PooLandApp.Server;
-
 public class LeafletPopupLayout
 {
     public static IDbContextFactory<PooLandDbContext> DbFactory { get; set; }
-    public LeafletPopupLayout(IDbContextFactory<PooLandDbContext> dbFactory) 
+    public static ILogger Logger { get; set; }
+    public LeafletPopupLayout(IDbContextFactory<PooLandDbContext> dbFactory, ILogger logger) 
     {
         DbFactory = dbFactory;
+        Logger = logger;
     }
 
     public int Id { get; set; }
@@ -44,6 +45,7 @@ public class LeafletPopupLayout
     public static void PopupButtonClick(string id) 
     {
         DisablePoo.DbFactory = DbFactory;
+        DisablePoo.Logger = Logger;
         DisablePoo.Disable(Convert.ToInt32(id));
     }
 
@@ -52,6 +54,7 @@ public class LeafletPopupLayout
 public static class DisablePoo 
 {
     public static IDbContextFactory<PooLandDbContext> DbFactory;
+    public static ILogger Logger { get; set; }
     public static void Disable(int Id)
     {
         try
@@ -66,7 +69,7 @@ public static class DisablePoo
         }
         catch (Exception ex)
         {
-            Console.WriteLine(ex.ToString());
+            Logger.LogDebug(ex.ToString());
         }
     }
 }

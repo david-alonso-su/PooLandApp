@@ -8,25 +8,28 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Shared\LeafletPopupLayout.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="BlazorStrap" Version="5.0.103" />
     <PackageReference Include="GeoJSON.Net" Version="1.2.19" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="6.0.2" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite.NetTopologySuite" Version="6.0.2" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="6.0.0">
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="6.0.2">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="Radzen.Blazor" Version="3.16.1" />
+    <PackageReference Include="Serilog.AspNetCore" Version="5.0.0" />
     <PackageReference Include="Texnomic.Blazor.hCaptcha" Version="0.1.1" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Blazor.Geolocation\AspNetMonsters.Blazor.Geolocation\AspNetMonsters.Blazor.Geolocation.csproj" />
     <ProjectReference Include="..\BlazorLeaflet\BlazorLeaflet\BlazorLeaflet\BlazorLeaflet.csproj" />
-    <ProjectReference Include="..\radzen-blazor\Radzen.Blazor\Radzen.Blazor.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Tools\BarriosRivas.geojson">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 

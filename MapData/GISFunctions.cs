@@ -1,11 +1,10 @@
-﻿using BlazorLeaflet.Models;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using NetTopologySuite.Algorithm;
 using NetTopologySuite.Geometries;
+using BlazorLeaflet.Models;
 using PooLandApp.Data;
 
 namespace PooLandApp.MapData;
-
 public static class GISFunctions
 {
     public static bool IsPositionInsideBounds(Coordinate coordinate, Geometry geometry)

@@ -1,10 +1,7 @@
-﻿namespace PooLandApp.Server
+﻿namespace PooLandApp.Server;
+public class DataOptions
 {
-    public class DataOptions
-    {
-        public int DaysGrouping { get; set; }
-        public int DefaultStartDaysAgo { get; set; }
-        public int MaxDaysAgo { get; set; }
-    }
-    
+    public int DaysGrouping { get; set; }
+    public int DefaultStartDaysAgo { get; set; }
+    public int MaxDaysAgo { get; set; }
 }

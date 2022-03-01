@@ -1,19 +1,13 @@
 ﻿@page "/report"
-@using PooLandApp.Data
-@using Radzen
-@using Radzen.Blazor
 @using AspNetMonsters.Blazor.Geolocation;
-@using BlazorLeaflet.Models
-@using Microsoft.EntityFrameworkCore
 @using Texnomic.Blazor.hCaptcha
-@using BlazorStrap
+@inject IJSRuntime JsRuntime
+@inject ILogger<Report> Logger;
 @inject LocationService LocationService
 @inject DialogService DialogService
-@inject IDbContextFactory<PooLandDbContext> DbFactory
 @inject NotificationService NotificationService
-@inject IJSRuntime JsRuntime
-
-
+@inject IDbContextFactory<PooLandDbContext> DbFactory
+@inject IOptionsMonitor<PhotoOptions> photoOptions
 
 @if (!IsFormSubmiting && !IsFormSubmited)
 {
@@ -52,7 +46,7 @@
                             <RadzenLabel Text="Photo" />
                             <RadzenFileInput @bind-Value=@data.Photo TValue="string" Class="w-100"
                                          Change=@(args => OnChangePhoto(args, "FileInput")) Error=@(args => OnErrorPhoto(args, "FileInput"))
-                                         MaxFileSize=@(10*1024*1024) MaxWidth=100 MaxHeight=100 />
+                                         MaxFileSize=@(photoOptions.CurrentValue.MaxFileSize) MaxWidth=@(photoOptions.CurrentValue.MaxWidth) MaxHeight=@(photoOptions.CurrentValue.MaxHeight) />
                         </RadzenCard>
                     </BSCol>
                 </BSRow>
@@ -161,7 +155,7 @@ else if (!IsFormSubmiting && IsFormSubmited)
         {
 
             IsFormSubmitedError = true;
-            Console.WriteLine(ex.ToString());
+            Logger.LogError(ex.ToString());
         }
         finally
         {
@@ -209,12 +203,12 @@ else if (!IsFormSubmiting && IsFormSubmited)
 
     void OnChangePhoto(string value, string name)
     {
-        Console.WriteLine($"{name} {value} changed");
+        Logger.LogDebug($"{name} {value} changed");
     }
 
     void OnErrorPhoto(UploadErrorEventArgs args, string name)
     {
-        Console.WriteLine($"{args.Message}");
+        Logger.LogError($"{args.Message}");
         var message = new NotificationMessage { Severity = NotificationSeverity.Error, Summary = "Error Uploading Photo", Detail = args.Message };
         NotificationService.Notify(message);
     }

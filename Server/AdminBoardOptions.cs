@@ -1,8 +1,6 @@
-﻿namespace PooLandApp.Server
+﻿namespace PooLandApp.Server;
+public class AdminBoardOptions
 {
-    public class AdminBoardOptions
-    {
-        public string Password { get; set; }
-    }
-    
+    public string Password { get; set; }
 }
+

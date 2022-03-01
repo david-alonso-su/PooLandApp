@@ -1,19 +1,9 @@
 ﻿@page "/mapview"
-@using PooLandApp.Server
-@using PooLandApp.Data
-@using BlazorLeaflet
-@using BlazorLeaflet.Models
-@using Radzen
-@using Radzen.Blazor
-@using BlazorStrap
-@using Microsoft.EntityFrameworkCore
-@using Microsoft.Extensions.Options
-@using System.Drawing
+@inject IJSRuntime jsRuntime
+@inject ILogger<MapView> Logger;
 @inject IDbContextFactory<PooLandDbContext> DbFactory
 @inject IOptionsMonitor<LeafletOptions> leafletOptions
 @inject IOptionsMonitor<DataOptions> dataOptions
-@inject IJSRuntime jsRuntime
-
 
 @if (MapComponent == null)
 {
@@ -112,13 +102,13 @@ else
             var toWeekAgo = listValues[1] * dataOptions.CurrentValue.DaysGrouping;
             fromWeekAgoDisplay = Math.Abs(listValues[0]);
             toWeekAgoDisplay = Math.Abs(listValues[1]);
-            Console.WriteLine($"From {fromWeekAgoDisplay} To {toWeekAgoDisplay}");
+            Logger.LogDebug($"From {fromWeekAgoDisplay} To {toWeekAgoDisplay}");
             await LoadMarkerWait(PooData.Where(x => x.Date > DateTime.UtcNow.AddDays(fromWeekAgo)
                                             && x.Date < DateTime.UtcNow.AddDays(toWeekAgo)));
         }
         catch (Exception ex)
         {
-            Console.WriteLine(ex.ToString());
+            Logger.LogError(ex.ToString());
         }
     }
 
@@ -146,19 +136,19 @@ else
         }
         else
         {
-            Console.WriteLine("LoadMarkers Canceled");
+            Logger.LogDebug("LoadMarkers Canceled");
         }
     }
 
     async Task LoadMarkers(IEnumerable<Poodatum> pooData)
     {
-        Console.WriteLine($"Start Load markers From {fromWeekAgoDisplay} To {toWeekAgoDisplay} at {DateTime.UtcNow}");
+        Logger.LogInformation($"Start Load markers From {fromWeekAgoDisplay} To {toWeekAgoDisplay} at {DateTime.UtcNow}");
         await ClearMarkers();
         List<Marker> tmpMarkers = new List<Marker>();
 
         await Parallel.ForEachAsync(pooData, async (poo, cancellationToken) =>
         {
-            var popupContent = new LeafletPopupLayout(DbFactory)
+            var popupContent = new LeafletPopupLayout(DbFactory, Logger)
                 {
                     Description = poo.Description,
                     Photo = poo.Photo,
@@ -188,6 +178,6 @@ else
         {
             Markers.AddRange(tmpMarkers);
         }
-        Console.WriteLine($"End Load markers at {DateTime.UtcNow}");
+        Logger.LogDebug($"End Load markers at {DateTime.UtcNow}");
     }
 }

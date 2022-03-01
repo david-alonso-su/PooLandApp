@@ -41,7 +41,7 @@ public static class LoadDb
         using var context = new PooLandDbContext(builder.Options);
         // result is true if the database had to be created
 
-       var result =  await context.Database.EnsureCreatedAsync();
+        var result =  await context.Database.EnsureCreatedAsync();
 
         var b = new LoadNeighborhoods
         {
@@ -134,6 +134,8 @@ public class LoadNeighborhoods
         try
         {
             dbContext.Neighborhoods.RemoveRange(dbContext.Neighborhoods.ToList());
+            if (!File.Exists(GeoJsonFile))
+                return;
             var json = File.ReadAllText(GeoJsonFile);
             FeatureCollection data = JsonConvert.DeserializeObject<FeatureCollection>(json);
             foreach (var feature in data.Features) 

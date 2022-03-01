@@ -1,19 +1,9 @@
 ﻿@page "/MapLocation/{Coordinates}"
-@using PooLandApp.Server
-@using PooLandApp.Data
-@using BlazorLeaflet
-@using BlazorLeaflet.Models
-@using Radzen
-@using Radzen.Blazor
-@using BlazorStrap
-@using Microsoft.Extensions.Options
-@using Microsoft.EntityFrameworkCore
-@using System.Drawing
-@inject Radzen.DialogService DialogService
+@inject IJSRuntime jsRuntime
+@inject DialogService DialogService
 @inject NotificationService NotificationService
 @inject IOptionsMonitor<LeafletOptions> leafletOptions
 @inject IDbContextFactory<PooLandDbContext> DbFactory
-@inject IJSRuntime jsRuntime
 
 @if (MapComponent == null)
 {

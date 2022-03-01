@@ -1,11 +1,10 @@
-﻿using BlazorLeaflet;
-using PooLandApp.Data;
+﻿using System.Drawing;
 using Microsoft.EntityFrameworkCore;
-using System.Drawing;
+using BlazorLeaflet;
 using BlazorLeaflet.Models;
+using PooLandApp.Data;
 
 namespace PooLandApp.MapData;
-
 public static class NeighborhoodsShapes
 {
     public static async void Create(Map mapComponent, DbSet<Neighborhood> neighborhoods)

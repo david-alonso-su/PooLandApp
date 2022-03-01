@@ -6,7 +6,8 @@ using Texnomic.Blazor.hCaptcha.Extensions;
 using BlazorStrap;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-
+using Serilog;
+using Serilog.Events;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -28,6 +29,7 @@ builder.Services.AddDbContextFactory<PooLandDbContext>(options =>
 builder.Services.Configure<LeafletOptions>(builder.Configuration.GetSection("Leaflet"));
 builder.Services.Configure<DataOptions>(builder.Configuration.GetSection("DataOptions"));
 builder.Services.Configure<AdminBoardOptions>(builder.Configuration.GetSection("AdminBoard"));
+builder.Services.Configure<PhotoOptions>(builder.Configuration.GetSection("PhotoOptions"));
 
 builder.Services.AddScoped<LocationService>();
 builder.Services.AddScoped<DialogService>();
@@ -42,6 +44,14 @@ builder.Services.AddHCaptcha(Options =>
 
 builder.Services.AddBlazorStrap();
 
+Log.Logger = new LoggerConfiguration()
+            .ReadFrom.Configuration(builder.Configuration)
+            .CreateLogger(); 
+builder.Services.AddLogging(logging => {
+    logging.ClearProviders();
+    logging.AddSerilog();
+});
+
 var app = builder.Build();
 
 
@@ -49,14 +59,16 @@ await using var scope = app.Services.GetRequiredService<IServiceScopeFactory>().
 var options = scope.ServiceProvider.GetRequiredService<DbContextOptions<PooLandDbContext>>();
 #if DEBUG
 // this section sets up and seeds the database. 
+Log.Information("Debug Mode, creating db");
 var maxBound = scope.ServiceProvider.GetService<IOptionsMonitor<LeafletOptions>>().CurrentValue.MaxBounds;
 await LoadDb.LoadDbData(options, maxBound, DateTime.UtcNow.AddYears(-1), 1000);
+Log.Information("Debug Mode, created db");
 #else
 //Ensure DB has the last model
 if (await LoadDb.EnsureCreated(options))
-    Console.WriteLine("Database created");
+    Log.Information("Database created");
 else
-    Console.WriteLine("Database already exists");
+    Log.Information("Database already exists");
 #endif
 
 // Configure the HTTP request pipeline.

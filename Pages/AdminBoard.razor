@@ -1,14 +1,6 @@
 ﻿@page "/adminboard"
-@using PooLandApp.Data
-@using PooLandApp.Server
-@using Radzen
-@using Radzen.Blazor
-@using BlazorStrap
-@using Microsoft.EntityFrameworkCore
-@using Microsoft.Extensions.Options
 @inject IDbContextFactory<PooLandDbContext> DbFactory
 @inject IOptionsMonitor<AdminBoardOptions> AdminBoardOptions
-
 
 @if (!PassOk)
 {
