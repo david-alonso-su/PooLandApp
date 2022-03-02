@@ -4,6 +4,7 @@
 @inject IDbContextFactory<PooLandDbContext> DbFactory
 @inject IOptionsMonitor<LeafletOptions> leafletOptions
 @inject IOptionsMonitor<DataOptions> dataOptions
+@inject IStringLocalizer<MapView> Loc
 
 @if (MapComponent == null)
 {
@@ -20,7 +21,8 @@ else
         <BSRow style="height: 20vh;">
             <BSCol>
                 <RadzenCard>
-                    <BSLabel> Weeks Ago From  @fromWeekAgoDisplay To @toWeekAgoDisplay</BSLabel>
+                    
+                    <BSLabel> @(String.Format(@Loc["Weeks Ago From  {0} To {1}"],fromWeekAgoDisplay, toWeekAgoDisplay))</BSLabel>
                     <RadzenSlider Range="true" @bind-Value=@weeksAgo TValue="IEnumerable<int>" Min="@fromWeeksAgo" Max="0" Step=1 Change=@(args => OnChangeWeeksAgo(args)) Class="w-100" />
                 </RadzenCard>
             </BSCol>

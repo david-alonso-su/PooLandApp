@@ -1,0 +1,48 @@
+﻿@using System.Globalization
+@inject NavigationManager Nav
+@inject IStringLocalizer<NavMenu> Loc
+
+
+<RadzenMenu>
+    <RadzenMenuItem Text=@Loc["Language"] Icon="language" >
+        @foreach (var culture in supportedCultures)
+        {
+            <RadzenMenuItem Click="OnChildClicked" Text=@culture.DisplayName Icon="flag" Value="@culture"></RadzenMenuItem>
+        }
+    </RadzenMenuItem>
+</RadzenMenu>
+
+
+@code
+{
+    private CultureInfo[] supportedCultures = new[]
+                {
+        new CultureInfo("en"),
+        new CultureInfo("es"),
+    };
+
+    private CultureInfo Culture { get; set; }
+
+    protected override void OnInitialized()
+    {
+        Culture = CultureInfo.CurrentCulture;
+    }
+
+    void OnChildClicked(MenuItemEventArgs args)
+    {
+        var culture = (CultureInfo)args.Value;
+        if (CultureInfo.CurrentCulture != culture)
+        {
+            var uri = new Uri(Nav.Uri)
+                .GetComponents(UriComponents.PathAndQuery, UriFormat.Unescaped);
+            var cultureEscaped = Uri.EscapeDataString(culture.Name);
+            var uriEscaped = Uri.EscapeDataString(uri);
+
+            Nav.NavigateTo(
+                $"Culture/Set?culture={cultureEscaped}&redirectUri={uriEscaped}",
+                forceLoad: true);
+        }
+    }
+
+
+}

@@ -1,7 +1,8 @@
 ﻿@using Radzen.Blazor
 @inherits LayoutComponentBase
+@inject IStringLocalizer<MainLayout> Loc
 
-<PageTitle>💩 PooLandApp 💩</PageTitle>
+<PageTitle>💩@Loc["PooLandApp"]💩</PageTitle>
 <RadzenDialog/>
 <RadzenNotification/>
 <div class="page">

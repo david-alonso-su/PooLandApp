@@ -52,6 +52,9 @@ builder.Services.AddLogging(logging => {
     logging.AddSerilog();
 });
 
+builder.Services.AddLocalization();
+builder.Services.AddControllers();
+
 var app = builder.Build();
 
 
@@ -85,6 +88,15 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
+var supportedCultures = new[] { "en", "es" };
+var localizationOptions = new RequestLocalizationOptions()
+    .SetDefaultCulture(supportedCultures[1])
+    .AddSupportedCultures(supportedCultures)
+    .AddSupportedUICultures(supportedCultures);
+
+app.UseRequestLocalization(localizationOptions);
+
+app.MapControllers();
 app.MapBlazorHub();
 app.MapFallbackToPage("/_Host");
 

@@ -4,6 +4,7 @@
 @inject NotificationService NotificationService
 @inject IOptionsMonitor<LeafletOptions> leafletOptions
 @inject IDbContextFactory<PooLandDbContext> DbFactory
+@inject IStringLocalizer<MapLocation> Loc
 
 @if (MapComponent == null)
 {
@@ -13,15 +14,15 @@ else
 {
     <BSRow>
         <BSCol>
-            <BSLabel>Latitude: @(Coordinates.Lat)</BSLabel>
+            <BSLabel>@Loc["Latitude"]: @(Coordinates.Lat)</BSLabel>
         </BSCol>
         <BSCol>
-            <BSLabel>Longitude:@(Coordinates.Lng)</BSLabel>
+            <BSLabel>@Loc["Longitude"]:@(Coordinates.Lng)</BSLabel>
         </BSCol>
     </BSRow>
     <BSRow>
         <BSCol>
-            <BSLabel>Neighborhood:@(NeighborhoodName)</BSLabel>
+            <BSLabel>@Loc["Neighborhood"]:@(NeighborhoodName)</BSLabel>
         </BSCol>
     </BSRow>
     <BSRow style="height: 60vh;">
@@ -31,8 +32,8 @@ else
     </BSRow>
     <BSRow>
         <BSCol Class="text-center">
-            <RadzenButton Click="@((args) => DialogService.Close(null))" ButtonStyle="ButtonStyle.Secondary" Text="Cancel" Style="width: 120px" Class="mr-1" />
-            <RadzenButton Click="@((args) => DialogService.Close(Coordinates))" Text="OK" Style="width: 120px" Disabled=@(!markerInsideBounds) />
+            <RadzenButton Click="@((args) => DialogService.Close(null))" ButtonStyle="ButtonStyle.Secondary" Text="@Loc["Cancel"]" Style="width: 120px" Class="mr-1" />
+            <RadzenButton Click="@((args) => DialogService.Close(Coordinates))" Text="@Loc["OK"]" Style="width: 120px" Disabled=@(!markerInsideBounds) />
         </BSCol>
     </BSRow>
 }
@@ -98,7 +99,7 @@ else
                 else
                 {
                     markerInsideBounds = false;
-                    var message = new NotificationMessage { Severity = NotificationSeverity.Error, Summary = "Out Of boundaries", Detail = "Out of boundaries" };
+                    var message = new NotificationMessage { Severity = NotificationSeverity.Error, Summary = Loc["Out Of boundaries"], Detail = Loc["Out Of boundaries"] };
                     NotificationService.Notify(message);
                 }
                 await InvokeAsync(() => StateHasChanged());

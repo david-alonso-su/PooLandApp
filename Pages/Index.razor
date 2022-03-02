@@ -1,12 +1,13 @@
 ﻿@page "/"
+@inject IStringLocalizer<Index> Loc
 
-<PageTitle>💩 CacaLand 💩</PageTitle>
+<PageTitle>💩@Loc["PooLand"]💩</PageTitle>
 
 <div class="bg-light">
     <div class="container py-5">
         <div class="row h-100 align-items-center py-5">
             <div class="col-lg-8">
-                <h1 class="display-4">💩 CacaLand 💩</h1>
+                <h1 class="display-4">💩@Loc["PooLand"]💩</h1>
                 <p class="lead text-muted mb-3">Si crees que ciertas zonas de Rivas son un cagadero de proporciones biblicas.</p>
                 <p class="lead text-muted">
                     <a href="report" class="text-muted">

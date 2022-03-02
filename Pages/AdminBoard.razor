@@ -1,16 +1,17 @@
 ﻿@page "/adminboard"
 @inject IDbContextFactory<PooLandDbContext> DbFactory
 @inject IOptionsMonitor<AdminBoardOptions> AdminBoardOptions
+@inject IStringLocalizer<AdminBoard> Loc
 
 @if (!PassOk)
 {
     <BSContainer Container="Container.Fluid">
         <RadzenTemplateForm Data="@formData" Submit="@((AdminBoardOptions args) => { SubmitForm(args); })">
 
-            <RadzenFieldset Text="Enter Password">
+            <RadzenFieldset Text="@Loc["Enter Password"]">
                 <BSRow MarginBottom="Margins.ExtraSmall" Justify="Justify.Start">
                     <BSCol Column="4" Align="Align.Center">
-                        <RadzenLabel Text="Password" />
+                        <RadzenLabel Text="@Loc["Password"]" />
                     </BSCol>
                     <BSCol Column="8">
                         <RadzenTextBox Name="Password" @bind-Value="formData.Password" Style="width:100%; display: block" />
@@ -18,7 +19,7 @@
                 </BSRow>
                 <BSRow Justify="Justify.Center" MarginTop="Margins.Medium">
                     <BSCol ColumnMedium="12" Align="Align.End" Class="text-center">
-                        <RadzenButton ButtonType="ButtonType.Submit" Icon="save" Text="Send" />
+                        <RadzenButton ButtonType="ButtonType.Submit" Icon="save" Text="@Loc["Send"]" />
                     </BSCol>
                 </BSRow>
             </RadzenFieldset>
@@ -29,7 +30,7 @@ else
 {
     <RadzenTabs RenderMode="TabRenderMode.Client">
         <Tabs>
-            <RadzenTabsItem Text="Poos">
+            <RadzenTabsItem Text="@Loc["Poos"]">
                 <RadzenDataGrid @ref="poodataGrid" AllowFiltering="true" AllowColumnResize="true" FilterMode="FilterMode.Simple" AllowSorting="true" PageSize="7" AllowPaging="true" PagerHorizontalAlign="HorizontalAlign.Left" ShowPagingSummary="true"
                             Data="@poodata" TItem="Poodatum" ColumnWidth="300px" LogicalFilterOperator="LogicalFilterOperator.Or"
                             EditMode="DataGridEditMode.Single" RowUpdate="@OnUpdateRow">

@@ -8,16 +8,17 @@
 @inject NotificationService NotificationService
 @inject IDbContextFactory<PooLandDbContext> DbFactory
 @inject IOptionsMonitor<PhotoOptions> photoOptions
+@inject IStringLocalizer<Report> Loc
 
 @if (!IsFormSubmiting && !IsFormSubmited)
 {
     <BSContainer Container="Container.Fluid">
         <RadzenTemplateForm Data="@data" Submit="@((FormData args) => { SubmitForm(args); })">
 
-            <RadzenFieldset Text="Poo Data">
+            <RadzenFieldset Text=@Loc["Poo Data"]>
                 <BSRow MarginBottom="Margins.ExtraSmall" Justify="Justify.Start">
                     <BSCol Column="4" Align="Align.Center">
-                        <RadzenLabel Text="Description" />
+                        <RadzenLabel Text=@Loc["Description"] />
                     </BSCol>
                     <BSCol Column="8">
                         <RadzenTextBox Name="Description" @bind-Value="data.Description" Style="width:100%; display: block" />
@@ -25,25 +26,25 @@
                 </BSRow>
                 <BSRow MarginBottom="Margins.Large" Align="Align.Center" Justify="Justify.Start">
                     <BSCol Column="2" Align="Align.Center">
-                        <RadzenLabel Text="Location" />
+                        <RadzenLabel Text=@Loc["Location"] />
                     </BSCol>
                     <BSCol Column="4" >
                         <RadzenTextBox Name="Latitude" @bind-Value="data.strLatitude" Disabled="true" Style="width:100%; display: block" />
-                        <RadzenRequiredValidator Component="Latitude" Text="Latitude required" Popup=true Style="position: absolute" />
+                        <RadzenRequiredValidator Component="Latitude" Text=@Loc["Latitude required"] Popup=true Style="position: absolute" />
                     </BSCol>
                     <BSCol Column="4">
                         <RadzenTextBox Name="Longitude" @bind-Value="data.strLongitude" Disabled="true" Style="width:100%; display: block" />
-                        <RadzenRequiredValidator Component="Longitude" Text="Longitude required" Popup=true Style="position: absolute" />
+                        <RadzenRequiredValidator Component="Longitude" Text=@Loc["Longitude required"] Popup=true Style="position: absolute" />
                     </BSCol>
                     <BSColBreak />
                     <BSCol Column="2" >
-                        <RadzenButton ButtonStyle="ButtonStyle.Info" Icon="add_location" style="margin-left: 11px; width: 166.046875px;" Text="Change Location" Click=@ChangePosition />
+                        <RadzenButton ButtonStyle="ButtonStyle.Info" Icon="add_location" style="margin-left: 11px; width: 166.046875px;" Text=@Loc["Change Location"] Click=@ChangePosition />
                     </BSCol>
                 </BSRow>
                 <BSRow PaddingLeftAndRight="Padding.Small" Align="Align.Start">
                     <BSCol ColumnLarge="6" OffsetLarge="3" Padding="Padding.Small">
                         <RadzenCard>
-                            <RadzenLabel Text="Photo" />
+                            <RadzenLabel Text=@Loc["Photo"] />
                             <RadzenFileInput @bind-Value=@data.Photo TValue="string" Class="w-100"
                                          Change=@(args => OnChangePhoto(args, "FileInput")) Error=@(args => OnErrorPhoto(args, "FileInput"))
                                          MaxFileSize=@(photoOptions.CurrentValue.MaxFileSize) MaxWidth=@(photoOptions.CurrentValue.MaxWidth) MaxHeight=@(photoOptions.CurrentValue.MaxHeight) />
@@ -55,13 +56,13 @@
                         <RadzenCard>
                             <HCaptcha Callback=hCaptchaCallback />
                             <RadzenNumeric Name="HCaptcha" @bind-Value="data.IsCaptchaValid" Visible="false" />
-                            <RadzenNumericRangeValidator Min="1" Max="1" Component="HCaptcha" Text="HCaptcha required" Popup=true Style="position: absolute" />
+                            <RadzenNumericRangeValidator Min="1" Max="1" Component="HCaptcha" Text=@Loc["HCaptcha required"] Popup=true Style="position: absolute" />
                         </RadzenCard>
                     </BSCol>
                 </BSRow>
                 <BSRow Justify="Justify.Center" MarginTop="Margins.Medium">
                     <BSCol ColumnMedium="12" Align="Align.End" Class="text-center">
-                        <RadzenButton ButtonType="ButtonType.Submit" Icon="save" Text="Send" />
+                        <RadzenButton ButtonType="ButtonType.Submit" Icon="save" Text=@Loc["Send"] />
                     </BSCol>
                 </BSRow>
             </RadzenFieldset>
@@ -82,14 +83,14 @@ else if (!IsFormSubmiting && IsFormSubmited)
                     @if (!IsFormSubmitedError)
                     {
                         <RadzenIcon Icon="check" IconStyle=IconStyle.Success />
-                        <RadzenBadge BadgeStyle="BadgeStyle.Success" Text="Poo Uploaded" />
-                        <RadzenLink Path="mapview" Text="Go to Map page" />
+                        <RadzenBadge BadgeStyle="BadgeStyle.Success" Text=@Loc["Poo Uploaded"] />
+                        <RadzenLink Path="mapview" Text=@Loc["Go to Map page"] />
                     }
                     else
                     {
                         <RadzenIcon Icon="error" IconStyle=IconStyle.Danger />
-                        <RadzenBadge BadgeStyle="BadgeStyle.Danger" Text="Sorry something went wrong" />
-                        <RadzenLink Path="report" Text="Try it again" />
+                        <RadzenBadge BadgeStyle="BadgeStyle.Danger" Text=@Loc["Sorry something went wrong"] />
+                        <RadzenLink Path="report" Text=@Loc["Try it again"] />
                     }
                 </RadzenCard>
             </BSCol>
@@ -124,14 +125,14 @@ else if (!IsFormSubmiting && IsFormSubmited)
         IsFormSubmiting = true;
         if (arg.Latitude == 0 || arg.Longitude == 0)
         {
-            var message = new NotificationMessage { Severity = NotificationSeverity.Error, Summary = "Invalid Coordinates", Detail = "Invalid Coordinates" };
+            var message = new NotificationMessage { Severity = NotificationSeverity.Error, Summary = Loc["Invalid Coordinates"], Detail = Loc["Invalid Coordinates"] };
             NotificationService.Notify(message);
             return;
         }
 
         if (arg.IsCaptchaValid == 0)
         {
-            var message = new NotificationMessage { Severity = NotificationSeverity.Error, Summary = "Invalid Captcha", Detail = "Invalid Captcha" };
+            var message = new NotificationMessage { Severity = NotificationSeverity.Error, Summary = Loc["Invalid Captcha"], Detail = @Loc["Invalid Captcha"] };
             NotificationService.Notify(message);
             return;
         }
@@ -178,7 +179,7 @@ else if (!IsFormSubmiting && IsFormSubmited)
         var height = dimension.Height - 56;
         var width = dimension.Width - 250;
         
-        var result = await DialogService.OpenAsync<MapLocation>("Pick poo location",
+        var result = await DialogService.OpenAsync<MapLocation>(Loc["Pick poo location"],
                new Dictionary<string, object>() { { "Coordinates", new LatLng(data.Latitude, data.Longitude) } },
                new DialogOptions() { Width = $"{width}px", Height = $"{height}px", Resizable = true, Draggable = true  });
 
@@ -209,7 +210,7 @@ else if (!IsFormSubmiting && IsFormSubmited)
     void OnErrorPhoto(UploadErrorEventArgs args, string name)
     {
         Logger.LogError($"{args.Message}");
-        var message = new NotificationMessage { Severity = NotificationSeverity.Error, Summary = "Error Uploading Photo", Detail = args.Message };
+        var message = new NotificationMessage { Severity = NotificationSeverity.Error, Summary = Loc["Error Uploading Photo"], Detail = args.Message };
         NotificationService.Notify(message);
     }
 }
