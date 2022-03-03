@@ -54,8 +54,8 @@ else
                                 <RadzenDatePicker @bind-Value="poo.Date" Style="width:100%" />
                             </EditTemplate>
                         </RadzenDataGridColumn>
-                        <RadzenDataGridColumn TItem="Poodatum" Property="Latitude" Title="Latitude" Filterable="false" Width="100px" />
-                        <RadzenDataGridColumn TItem="Poodatum" Property="Longitude" Title="Longitude" Filterable="false" Width="100px" />
+                        <RadzenDataGridColumn TItem="Poodatum" Property="Location.X" Title="Latitude" Filterable="false" Width="100px" />
+                        <RadzenDataGridColumn TItem="Poodatum" Property="Location.Y" Title="Longitude" Filterable="false" Width="100px" />
                         <RadzenDataGridColumn TItem="Poodatum" Property="Visible" Title="Visible" Width="40px">
                             <Template Context="data">
                                 <RadzenCheckBox @bind-Value=@data.Visible Name="Visible" TValue="bool" Disabled="true" />

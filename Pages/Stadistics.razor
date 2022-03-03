@@ -4,13 +4,7 @@
 @inject IOptionsMonitor<DataOptions> dataOptions
 @inject IStringLocalizer<Stadistics> Loc
 
-@if (pooPerNeighborhoodLastYear == null || !pooPerNeighborhoodLastYear.Any()
-|| pooLastDay == null || !pooLastDay.Any())
-{
-    <RadzenProgressBar Value="100" ShowValue="false" Mode="ProgressBarMode.Indeterminate" />
-}
-else
-{
+
     <BSContainer MarginTopAndBottom=Margins.Large Container=Container.Fluid>
         <BSRow MarginBottom=Margins.ExtraLarge>
             <BSCol ColumnXXL="6">
@@ -49,7 +43,7 @@ else
             </BSCol>
         </BSRow>
     </BSContainer>
-}
+
 @code {
     class PooPerNeighborhood
     {
