@@ -29,7 +29,7 @@ public partial class PooLandDbContext : DbContext
         {
             entity.ToTable("poodata");
 
-            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.Id).HasColumnName("id").ValueGeneratedOnAdd();
 
             entity.Property(e => e.Date).HasColumnName("date").HasDefaultValue(DateTime.UtcNow);
 
@@ -42,16 +42,23 @@ public partial class PooLandDbContext : DbContext
             entity.Property(e => e.Visible).HasColumnName("visible");
 
             entity.Property(e => e.Location);
+
+            entity.Property(e => e.NeighborhoodId);
+
+            entity.HasKey(e => e.Id);
+
+            entity.HasOne<Neighborhood>(s => s.Neighborhood).WithMany(g => g.Poodatums).HasForeignKey(s => s.NeighborhoodId);
         });
 
         modelBuilder.Entity<Neighborhood>(entity =>
         {
             entity.ToTable("neighborhood");
-            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.Id).HasColumnName("id").ValueGeneratedOnAdd();
             entity.Property(e => e.Name).HasColumnName("description");
             entity.Property(e => e.Coordinates);
+
+            entity.HasKey(e => e.Id);
         });
-       
 
         OnModelCreatingPartial(modelBuilder);
     }

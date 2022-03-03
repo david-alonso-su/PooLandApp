@@ -9,4 +9,6 @@ public partial class Poodatum
     public string? Photo { get; set; } = null!;
     public Point Location { get; set; }
     public bool Visible { get; set; }
+    public int NeighborhoodId { get; set; }
+    public Neighborhood Neighborhood { get; set; }
 }

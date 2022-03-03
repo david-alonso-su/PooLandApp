@@ -1,8 +1,162 @@
 ﻿@page "/stadistics"
+@using System.Globalization
+@inject IDbContextFactory<PooLandDbContext> DbFactory
+@inject IOptionsMonitor<DataOptions> dataOptions
+@inject IStringLocalizer<Stadistics> Loc
 
-<h3>Stadistics</h3>
+@if (pooPerNeighborhoodLastYear == null || !pooPerNeighborhoodLastYear.Any()
+|| pooLastDay == null || !pooLastDay.Any())
+{
+    <RadzenProgressBar Value="100" ShowValue="false" Mode="ProgressBarMode.Indeterminate" />
+}
+else
+{
+    <BSContainer MarginTopAndBottom=Margins.Large Container=Container.Fluid>
+        <BSRow MarginBottom=Margins.ExtraLarge>
+            <BSCol ColumnXXL="6">
+                <RadzenFieldset Text=@Loc["Last day"]>
+                    <RadzenChart>
+                        <RadzenPieSeries Data="@pooLastDay" Title=@Loc["Last day"] CategoryProperty="NeighborhoodName" ValueProperty="Count" />
+                    </RadzenChart>
+                </RadzenFieldset>
+            </BSCol>
+            <BSCol  ColumnXXL="6">
+                <RadzenFieldset Text=@Loc["Current Month"]>
+                    <RadzenChart>
+                        <RadzenPieSeries Data="@pooCurrentMonth" Title=@Loc["Current Month"] CategoryProperty="NeighborhoodName" ValueProperty="Count" />
+                    </RadzenChart>
+                </RadzenFieldset>
+            </BSCol>
+        </BSRow>
+        <BSRow>
+            <BSCol>
+                <RadzenFieldset Text=@Loc["Last 12 Month"]>
+                    <RadzenChart>
+                        @foreach (var a in pooPerNeighborhoodLastYear)
+                        {
 
-
+                            <RadzenLineSeries Smooth="true" Data="@a.PooPerNeighborhood" CategoryProperty="Date" Title="@a.NeighborhoodName" LineType="LineType.Solid" ValueProperty="Count">
+                                <RadzenMarkers MarkerType="MarkerType.Circle" />
+                            </RadzenLineSeries>
+                        }
+                        <RadzenCategoryAxis Padding="20" FormatString="{0:MMM-yyyy}" />
+                        <RadzenValueAxis>
+                            <RadzenGridLines Visible="true" />
+                            <RadzenAxisTitle Text="Poos Per Month" />
+                        </RadzenValueAxis>
+                    </RadzenChart>
+                </RadzenFieldset>
+            </BSCol>
+        </BSRow>
+    </BSContainer>
+}
 @code {
+    class PooPerNeighborhood
+    {
+        public int NeighborhoodId { get; set; }
+        public DateTime Date { get; set; }
+        public double Count { get; set; }
 
+    }
+
+    class PooPerNeighborhoodLastYear
+    {
+        public int NeighborhoodId { get; set; }
+        public string NeighborhoodName { get; set; }
+        public List<PooPerNeighborhood> PooPerNeighborhood { get; set; }
+
+    }
+
+    List<PooPerNeighborhoodLastYear> pooPerNeighborhoodLastYear = new List<PooPerNeighborhoodLastYear>();
+
+    class PooLast
+    {
+        public string NeighborhoodName { get; set; }
+        public double Count { get; set; }
+    }
+
+    List<PooLast> pooLastDay = new List<PooLast>();
+    List<PooLast> pooCurrentMonth = new List<PooLast>();
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        await LastDay();
+        await CurrentMonth();
+        await Last12Month();
+    }
+
+    async Task LastDay()
+    {
+
+        using var pooContext = DbFactory.CreateDbContext();
+        var fromDate = DateTime.Today.AddDays(-1);
+        var toDate = DateTime.Today;
+        pooLastDay = await pooContext.Poodata
+                       .Where(x => x.Date >= fromDate
+                                   && x.Date < toDate
+                                   && x.Visible == true)
+                       .GroupBy(x => new { x.NeighborhoodId })
+                       .Select(g => new PooLast
+                           {
+                               NeighborhoodName = pooContext.Neighborhoods.Where(x => x.Id == g.Key.NeighborhoodId).Single().Name,
+                               Count = g.Count()
+                           })
+                      .ToListAsync();
+        _ = pooLastDay;
+    }
+
+    async Task CurrentMonth()
+    {
+        using var pooContext = DbFactory.CreateDbContext();
+        var fromDate = new DateTime(DateTime.Today.Year, DateTime.Today.Month,1);
+
+        pooCurrentMonth = await pooContext.Poodata
+                                          .Where(x => x.Date >= fromDate
+                                                      && x.Visible == true)
+                                          .GroupBy(x => new { x.NeighborhoodId })
+                                          .Select(g => new PooLast
+                                              {
+                                                  NeighborhoodName = pooContext.Neighborhoods.Where(x => x.Id == g.Key.NeighborhoodId).Single().Name,
+                                                  Count = g.Count()
+                                              })
+                                         .ToListAsync();
+        _ = pooCurrentMonth;
+
+    }
+
+
+
+
+    async Task Last12Month()
+    {
+        using var pooContext = DbFactory.CreateDbContext();
+        var fromDate = new DateTime(DateTime.Today.AddMonths(-12).Year, DateTime.Today.AddMonths(-12).Month, 1);
+        var toDate = new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1);
+        var dataGroup = await pooContext.Poodata
+                                .Where(x => x.Date >= fromDate
+                                            && x.Date < toDate
+                                            && x.Visible == true)
+                                .GroupBy(x => new { x.NeighborhoodId, x.Date.Year, x.Date.Month })
+                                .Select(g => new PooPerNeighborhood
+                                    {
+                                        NeighborhoodId = g.Key.NeighborhoodId,
+                                        Date = DateTime.Parse($"{g.Key.Year}-{g.Key.Month}-01"),
+                                        Count = g.Count()
+                                    })
+                               .ToListAsync();
+
+        foreach (var neighborhoods in pooContext.Neighborhoods)
+        {
+            pooPerNeighborhoodLastYear.Add(
+                new PooPerNeighborhoodLastYear
+                    {
+                        NeighborhoodId = neighborhoods.Id,
+                        NeighborhoodName = neighborhoods.Name,
+                        PooPerNeighborhood = dataGroup.Where(x => x.NeighborhoodId == neighborhoods.Id).ToList()
+                    }
+            );
+
+        }
+    }
 }

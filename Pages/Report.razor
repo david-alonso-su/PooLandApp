@@ -28,7 +28,7 @@
                     <BSCol Column="2" Align="Align.Center">
                         <RadzenLabel Text=@Loc["Location"] />
                     </BSCol>
-                    <BSCol Column="4" >
+                    <BSCol Column="4">
                         <RadzenTextBox Name="Latitude" @bind-Value="data.strLatitude" Disabled="true" Style="width:100%; display: block" />
                         <RadzenRequiredValidator Component="Latitude" Text=@Loc["Latitude required"] Popup=true Style="position: absolute" />
                     </BSCol>
@@ -37,7 +37,7 @@
                         <RadzenRequiredValidator Component="Longitude" Text=@Loc["Longitude required"] Popup=true Style="position: absolute" />
                     </BSCol>
                     <BSColBreak />
-                    <BSCol Column="2" >
+                    <BSCol Column="2">
                         <RadzenButton ButtonStyle="ButtonStyle.Info" Icon="add_location" style="margin-left: 11px; width: 166.046875px;" Text=@Loc["Change Location"] Click=@ChangePosition />
                     </BSCol>
                 </BSRow>
@@ -136,19 +136,20 @@ else if (!IsFormSubmiting && IsFormSubmited)
             NotificationService.Notify(message);
             return;
         }
-
-        var poo = new Poodatum
-            {
-                Date = DateTime.UtcNow,
-                Description = arg.Description,
-                Location = new NetTopologySuite.Geometries.Point(arg.Latitude,  arg.Longitude),
-                Photo = arg.Photo,
-                Visible = true
-            };
-
         try
         {
             using var pooContext = DbFactory.CreateDbContext();
+            var coordinate = new NetTopologySuite.Geometries.Point(arg.Latitude, arg.Longitude);
+            var poo = new Poodatum
+                {
+                    Date = DateTime.UtcNow,
+                    Description = arg.Description,
+                    Location = coordinate,
+                    Photo = arg.Photo,
+                    Visible = true,
+                    Neighborhood = GISFunctions.FindNeighborhood(coordinate, pooContext.Neighborhoods)
+                };
+
             await pooContext.AddAsync(poo);
             await pooContext.SaveChangesAsync();
         }
@@ -178,10 +179,10 @@ else if (!IsFormSubmiting && IsFormSubmited)
         var dimension = await JsRuntime.InvokeAsync<WindowDimension>("getWindowDimensions");
         var height = dimension.Height - 56;
         var width = dimension.Width - 250;
-        
+
         var result = await DialogService.OpenAsync<MapLocation>(Loc["Pick poo location"],
                new Dictionary<string, object>() { { "Coordinates", new LatLng(data.Latitude, data.Longitude) } },
-               new DialogOptions() { Width = $"{width}px", Height = $"{height}px", Resizable = true, Draggable = true  });
+               new DialogOptions() { Width = $"{width}px", Height = $"{height}px", Resizable = true, Draggable = true });
 
         if (result == null)
         {

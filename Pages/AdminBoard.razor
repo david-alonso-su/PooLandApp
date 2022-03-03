@@ -41,7 +41,7 @@ else
                                 <RadzenImage Path="@data.Photo" style="width: 50px; border-radius: 8px;" />
                             </Template>
                         </RadzenDataGridColumn>
-                        <RadzenDataGridColumn TItem="Poodatum" Property="Description" Title="First Name" Width="200px">
+                        <RadzenDataGridColumn TItem="Poodatum" Property="Description" Title="Description" Width="200px">
                             <EditTemplate Context="poo">
                                 <RadzenTextBox @bind-Value="poo.Description" Style="width:100%; display: block" Name="Description" />
                             </EditTemplate>
@@ -62,6 +62,11 @@ else
                             </Template>
                             <EditTemplate Context="poo">
                                 <RadzenCheckBox @bind-Value="poo.Visible" Name="Visible" TValue="bool" />
+                            </EditTemplate>
+                        </RadzenDataGridColumn>
+                        <RadzenDataGridColumn TItem="Poodatum" Property="NeighborhoodId" Title="NeighborhoodId" Width="100px">
+                            <EditTemplate Context="poo">
+                                <RadzenNumeric ShowUpDown="false" @bind-Value=@poo.NeighborhoodId />
                             </EditTemplate>
                         </RadzenDataGridColumn>
                         @*Buttons sections*@

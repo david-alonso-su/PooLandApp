@@ -21,6 +21,12 @@ public static class GISFunctions
         return IsPositionInsideBounds(coordinate, geometry);
 
     }
+    public static bool IsPositionInsideBounds(Point point, Geometry geometry)
+    {
+        var coordinate = new Coordinate(point.X, point.Y);
+        return IsPositionInsideBounds(coordinate, geometry);
+
+    }
     public static bool IsPositionInNeighborhoods(LatLng position, DbSet<Neighborhood> neighborhoods, out string neighborhoodName)
     {
         neighborhoodName = "Out of Boundaries";
@@ -36,5 +42,20 @@ public static class GISFunctions
             }
         }
         return result;
+    }
+    public static Neighborhood? FindNeighborhood(Point position, DbSet<Neighborhood> neighborhoods) 
+    {
+        Neighborhood? neighborhood = null;
+
+        foreach (var n in neighborhoods)
+        {
+            if (IsPositionInsideBounds(position, n.Coordinates))
+            {
+                neighborhood = n;
+                break;
+            }
+        }
+
+        return neighborhood;
     }
 }
