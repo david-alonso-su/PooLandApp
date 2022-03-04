@@ -120,6 +120,9 @@
   <data name="Change Location" xml:space="preserve">
     <value>Cambiar localizacion</value>
   </data>
+  <data name="Choose" xml:space="preserve">
+    <value>Elejir</value>
+  </data>
   <data name="Description" xml:space="preserve">
     <value>Descripcion</value>
   </data>

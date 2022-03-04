@@ -126,4 +126,7 @@
   <data name="Last day" xml:space="preserve">
     <value>Ultimo dia</value>
   </data>
+  <data name="Poos Per Month" xml:space="preserve">
+    <value>Cacas al mes</value>
+  </data>
 </root>

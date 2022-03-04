@@ -7,14 +7,14 @@
 
     <BSContainer MarginTopAndBottom=Margins.Large Container=Container.Fluid>
         <BSRow MarginBottom=Margins.ExtraLarge>
-            <BSCol ColumnXXL="6">
+            <BSCol ColumnLarge="6">
                 <RadzenFieldset Text=@Loc["Last day"]>
                     <RadzenChart>
                         <RadzenPieSeries Data="@pooLastDay" Title=@Loc["Last day"] CategoryProperty="NeighborhoodName" ValueProperty="Count" />
                     </RadzenChart>
                 </RadzenFieldset>
             </BSCol>
-            <BSCol  ColumnXXL="6">
+            <BSCol  ColumnLarge="6">
                 <RadzenFieldset Text=@Loc["Current Month"]>
                     <RadzenChart>
                         <RadzenPieSeries Data="@pooCurrentMonth" Title=@Loc["Current Month"] CategoryProperty="NeighborhoodName" ValueProperty="Count" />
@@ -36,7 +36,7 @@
                         <RadzenCategoryAxis Padding="20" FormatString="{0:MMM-yyyy}" />
                         <RadzenValueAxis>
                             <RadzenGridLines Visible="true" />
-                            <RadzenAxisTitle Text="Poos Per Month" />
+                            <RadzenAxisTitle Text=@Loc["Poos Per Month"] />
                         </RadzenValueAxis>
                     </RadzenChart>
                 </RadzenFieldset>

@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using PooLandApp.Data;
 using PooLandApp.Server;
-
+using Microsoft.EntityFrameworkCore.Storage;
 
 public static class LoadDb
 {
@@ -33,21 +33,23 @@ public static class LoadDb
         }
     }
 
-    public static async Task<bool> EnsureCreated(DbContextOptions<PooLandDbContext> options) 
+    public static async Task<bool> EnsureCreated(string dbName, DbContextOptions<PooLandDbContext> options) 
     {
-        
+        bool result = false;
         var builder = new DbContextOptionsBuilder<PooLandDbContext>(options);
 
         using var context = new PooLandDbContext(builder.Options);
-        // result is true if the database had to be created
-
-        var result =  await context.Database.EnsureCreatedAsync();
-
-        var b = new LoadNeighborhoods
+        if (!File.Exists(dbName))
         {
-            GeoJsonFile = @"Tools\BarriosRivas.geojson"
-        };
-        b.LoadDb(context);
+            
+            // result is true if the database had to be created
+            result = await context.Database.EnsureCreatedAsync();
+            var b = new LoadNeighborhoods
+            {
+                GeoJsonFile = @"Tools\BarriosRivas.geojson"
+            };
+            b.LoadDb(context);
+        }
         return result;
     }
 

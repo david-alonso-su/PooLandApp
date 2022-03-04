@@ -17,6 +17,8 @@ public class LeafletPopupLayout
     public string? Description { get; set; }
     public string? Photo { get; set; }
 
+    public string? ButtonText { get; set; }
+
     //private string html ="asdfadf";
     private string html = @"
             <div class=""container"">
@@ -32,14 +34,14 @@ public class LeafletPopupLayout
                 </div>
                 <div class=""row mt-2"">
                     <div class=""col text-center"">
-                        <button id=""popup-button-submit"" onclick=""popupButtonClick('{2}')"" type=""button"" class=""btn btn-outline-primary btn-sm"">Report Abuse</button>
+                        <button id=""popup-button-submit"" onclick=""popupButtonClick('{2}')"" type=""button"" class=""btn btn-outline-primary btn-sm"">{3}</button>
                     </div>
                 </div>
             </div>
 
             ";
 
-    public string GetHtml() { return String.Format(html, Description, Photo, Id); }
+    public string GetHtml() { return String.Format(html, Description, Photo, Id, ButtonText); }
 
     [JSInvokable]
     public static void PopupButtonClick(string id) 

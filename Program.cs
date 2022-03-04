@@ -61,17 +61,17 @@ var app = builder.Build();
 await using var scope = app.Services.GetRequiredService<IServiceScopeFactory>().CreateAsyncScope();
 var options = scope.ServiceProvider.GetRequiredService<DbContextOptions<PooLandDbContext>>();
 #if DEBUG
-// this section sets up and seeds the database. 
-Log.Information("Debug Mode, creating db");
-var maxBound = scope.ServiceProvider.GetService<IOptionsMonitor<LeafletOptions>>().CurrentValue.MaxBounds;
-await LoadDb.LoadDbData(options, maxBound, DateTime.UtcNow.AddYears(-1), 1000);
-Log.Information("Debug Mode, created db");
+    // this section sets up and seeds the database. 
+    Log.Information("Debug Mode, creating db");
+    var maxBound = scope.ServiceProvider.GetService<IOptionsMonitor<LeafletOptions>>().CurrentValue.MaxBounds;
+    await LoadDb.LoadDbData(options, maxBound, DateTime.UtcNow.AddYears(-1), 1000);
+    Log.Information("Debug Mode, created db");
 #else
 //Ensure DB has the last model
-if (await LoadDb.EnsureCreated(options))
-    Log.Information("Database created");
-else
-    Log.Information("Database already exists");
+    if (await LoadDb.EnsureCreated(builder.Configuration["DbName"],options))
+        Log.Information("Database created");
+    else
+        Log.Information("Database already exists");
 #endif
 
 // Configure the HTTP request pipeline.

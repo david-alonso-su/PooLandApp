@@ -25,19 +25,19 @@
                     </BSCol>
                 </BSRow>
                 <BSRow MarginBottom="Margins.Large" Align="Align.Center" Justify="Justify.Start">
-                    <BSCol Column="2" Align="Align.Center">
+                    <BSCol  ColumnLarge="2" Align="Align.Center">
                         <RadzenLabel Text=@Loc["Location"] />
                     </BSCol>
-                    <BSCol Column="4">
+                    <BSCol ColumnLarge="4">
                         <RadzenTextBox Name="Latitude" @bind-Value="data.strLatitude" Disabled="true" Style="width:100%; display: block" />
                         <RadzenRequiredValidator Component="Latitude" Text=@Loc["Latitude required"] Popup=true Style="position: absolute" />
                     </BSCol>
-                    <BSCol Column="4">
+                    <BSCol ColumnLarge="4">
                         <RadzenTextBox Name="Longitude" @bind-Value="data.strLongitude" Disabled="true" Style="width:100%; display: block" />
                         <RadzenRequiredValidator Component="Longitude" Text=@Loc["Longitude required"] Popup=true Style="position: absolute" />
                     </BSCol>
                     <BSColBreak />
-                    <BSCol Column="2">
+                    <BSCol ColumnLarge="2">
                         <RadzenButton ButtonStyle="ButtonStyle.Info" Icon="add_location" style="margin-left: 11px; width: 166.046875px;" Text=@Loc["Change Location"] Click=@ChangePosition />
                     </BSCol>
                 </BSRow>
@@ -45,7 +45,7 @@
                     <BSCol ColumnLarge="6" OffsetLarge="3" Padding="Padding.Small">
                         <RadzenCard>
                             <RadzenLabel Text=@Loc["Photo"] />
-                            <RadzenFileInput @bind-Value=@data.Photo TValue="string" Class="w-100"
+                            <RadzenFileInput @bind-Value=@data.Photo TValue="string" Class="w-100" ChooseText=@Loc["Choose"]
                                          Change=@(args => OnChangePhoto(args, "FileInput")) Error=@(args => OnErrorPhoto(args, "FileInput"))
                                          MaxFileSize=@(photoOptions.CurrentValue.MaxFileSize) MaxWidth=@(photoOptions.CurrentValue.MaxWidth) MaxHeight=@(photoOptions.CurrentValue.MaxHeight) />
                         </RadzenCard>
