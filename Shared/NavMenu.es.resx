@@ -118,7 +118,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="About" xml:space="preserve">
-    <value>Sobre mi</value>
+    <value>Sobre mí</value>
   </data>
   <data name="Home" xml:space="preserve">
     <value>Inicio</value>
@@ -133,6 +133,6 @@
     <value>Informar</value>
   </data>
   <data name="Stadistics" xml:space="preserve">
-    <value>Estadisticas</value>
+    <value>Estadísticas</value>
   </data>
 </root>

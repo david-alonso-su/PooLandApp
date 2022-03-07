@@ -145,7 +145,7 @@
     <value>Latitud</value>
   </data>
   <data name="Latitude required" xml:space="preserve">
-    <value>Latitud requerido</value>
+    <value>Latitud requerida</value>
   </data>
   <data name="Location" xml:space="preserve">
     <value>Localización</value>
@@ -154,7 +154,7 @@
     <value>Longitud</value>
   </data>
   <data name="Longitude required" xml:space="preserve">
-    <value>Longitud requerido</value>
+    <value>Longitud requerida</value>
   </data>
   <data name="Photo" xml:space="preserve">
     <value>Foto</value>

@@ -118,9 +118,9 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="Report Abuse" xml:space="preserve">
-    <value>Reportar uso Inadecuado</value>
+    <value>Reportar uso inadecuado</value>
   </data>
   <data name="Weeks Ago From  {0} To {1}" xml:space="preserve">
-    <value>Semanas atras desde {0} hasta {1}</value>
+    <value>Semanas atrás desde {0} hasta {1}</value>
   </data>
 </root>
