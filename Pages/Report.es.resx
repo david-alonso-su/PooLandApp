@@ -118,13 +118,13 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="Change Location" xml:space="preserve">
-    <value>Cambiar localizacion</value>
+    <value>Cambiar localización</value>
   </data>
   <data name="Choose" xml:space="preserve">
-    <value>Elejir</value>
+    <value>Elegir</value>
   </data>
   <data name="Description" xml:space="preserve">
-    <value>Descripcion</value>
+    <value>Descripción</value>
   </data>
   <data name="Error Uploading Photo" xml:space="preserve">
     <value>Error subiendo foto</value>
@@ -148,7 +148,7 @@
     <value>Latitud requerido</value>
   </data>
   <data name="Location" xml:space="preserve">
-    <value>Localizacion</value>
+    <value>Localización</value>
   </data>
   <data name="Longitude" xml:space="preserve">
     <value>Longitud</value>
@@ -160,21 +160,21 @@
     <value>Foto</value>
   </data>
   <data name="Pick poo location" xml:space="preserve">
-    <value>Posicion de la caca</value>
+    <value>Posición de la caca</value>
   </data>
   <data name="Poo Data" xml:space="preserve">
     <value>CacaDatos</value>
   </data>
   <data name="Poo Uploaded" xml:space="preserve">
-    <value>Caca Subida</value>
+    <value>Caca subida</value>
   </data>
   <data name="Send" xml:space="preserve">
     <value>Enviar</value>
   </data>
   <data name="Sorry something went wrong" xml:space="preserve">
-    <value>Perdon, algo fue mal</value>
+    <value>Perdón, algo fue mal</value>
   </data>
   <data name="Try it again" xml:space="preserve">
-    <value>Intentar de Nuevo</value>
+    <value>Intentar de nuevo</value>
   </data>
 </root>
