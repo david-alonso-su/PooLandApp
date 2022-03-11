@@ -156,6 +156,9 @@
   <data name="Longitude required" xml:space="preserve">
     <value>Longitud requerida</value>
   </data>
+  <data name="Out Of boundaries" xml:space="preserve">
+    <value>Zona invalida</value>
+  </data>
   <data name="Photo" xml:space="preserve">
     <value>Foto</value>
   </data>
@@ -168,6 +171,9 @@
   <data name="Poo Uploaded" xml:space="preserve">
     <value>Caca subida</value>
   </data>
+  <data name="Refresh Location" xml:space="preserve">
+    <value>Actulizar posición</value>
+  </data>
   <data name="Send" xml:space="preserve">
     <value>Enviar</value>
   </data>
@@ -176,5 +182,8 @@
   </data>
   <data name="Try it again" xml:space="preserve">
     <value>Intentar de nuevo</value>
+  </data>
+  <data name="Upload again" xml:space="preserve">
+    <value>Sube otra 💩</value>
   </data>
 </root>

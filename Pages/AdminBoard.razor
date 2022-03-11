@@ -47,9 +47,6 @@ else
                             </EditTemplate>
                         </RadzenDataGridColumn>
                         <RadzenDataGridColumn TItem="Poodatum" Property="Date" Title="Date" Width="140px">
-                            <Template Context="poo">
-                                @String.Format("{0:d}", poo.Date)
-                            </Template>
                             <EditTemplate Context="poo">
                                 <RadzenDatePicker @bind-Value="poo.Date" Style="width:100%" />
                             </EditTemplate>

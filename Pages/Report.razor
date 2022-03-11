@@ -25,7 +25,7 @@
                     </BSCol>
                 </BSRow>
                 <BSRow MarginBottom="Margins.Large" Align="Align.Center" Justify="Justify.Start">
-                    <BSCol  ColumnLarge="2" Align="Align.Center">
+                    <BSCol ColumnLarge="2" Align="Align.Center">
                         <RadzenLabel Text=@Loc["Location"] />
                     </BSCol>
                     <BSCol ColumnLarge="4">
@@ -38,7 +38,10 @@
                     </BSCol>
                     <BSColBreak />
                     <BSCol ColumnLarge="2">
-                        <RadzenButton ButtonStyle="ButtonStyle.Info" Icon="add_location" style="margin-left: 11px; width: 166.046875px;" Text=@Loc["Change Location"] Click=@ChangePosition />
+                        <RadzenButton ButtonStyle="ButtonStyle.Info" Icon="add_location" Text=@Loc["Change Location"] Click=@ChangePosition />
+                    </BSCol>
+                    <BSCol ColumnLarge="2">
+                        <RadzenButton ButtonStyle="ButtonStyle.Info" Icon="refresh" Text=@Loc["Refresh Location"] Click=@UpdatePosition />
                     </BSCol>
                 </BSRow>
                 <BSRow PaddingLeftAndRight="Padding.Small" Align="Align.Start">
@@ -76,21 +79,20 @@ else if (IsFormSubmiting && !IsFormSubmited)
 }
 else if (!IsFormSubmiting && IsFormSubmited)
 {
-    <BSContainer Container="Container.Fluid">
-        <BSRow>
-            <BSCol>
-                <RadzenCard>
+    <BSContainer  > 
+        <BSRow Justify="Justify.Center">
+            <BSCol Class="text-center">
+                <RadzenCard  >
                     @if (!IsFormSubmitedError)
                     {
-                        <RadzenIcon Icon="check" IconStyle=IconStyle.Success />
-                        <RadzenBadge BadgeStyle="BadgeStyle.Success" Text=@Loc["Poo Uploaded"] />
-                        <RadzenLink Path="mapview" Text=@Loc["Go to Map page"] />
+                        <div class="p-3 mb-2 bg-success text-white text-center">@Loc["Poo Uploaded"]</div>
+                        <RadzenLink Icon="check" Path="mapview" Text=@Loc["Go to Map page"]  class="btn btn-success px-5 rounded-pill active btn-lg mb-2" aria-pressed="true"/>
+                        <RadzenLink Icon="check" Path="report" Text=@Loc["Upload again"]  class="btn btn-primary px-5 rounded-pill active btn-lg"  @onclick="ResetVars"/>
                     }
                     else
                     {
-                        <RadzenIcon Icon="error" IconStyle=IconStyle.Danger />
-                        <RadzenBadge BadgeStyle="BadgeStyle.Danger" Text=@Loc["Sorry something went wrong"] />
-                        <RadzenLink Path="report" Text=@Loc["Try it again"] />
+                       <div class="p-3 mb-2 bg-danger text-white  text-center">@Loc["Sorry something went wrong"]</div>
+                       <RadzenLink Icon="error" Path="report" Text=@Loc["Try it again"]   class="btn btn-danger px-5 rounded-pill active btn-lg" aria-pressed="true"  @onclick="ResetVars"/>                        
                     }
                 </RadzenCard>
             </BSCol>
@@ -117,6 +119,26 @@ else if (!IsFormSubmiting && IsFormSubmited)
 
     protected override async Task OnInitializedAsync()
     {
+
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await GetLocation();
+            await InvokeAsync(() => StateHasChanged());
+            Logger.LogDebug("OnAfterRenderAsync");
+        }
+    }
+
+    async Task  ResetVars()
+    {
+        IsFormSubmiting = false;
+        IsFormSubmited = false;
+        IsFormSubmitedError = false;
+        data = new FormData();
+        IsCaptchaValid = false;
         await GetLocation();
     }
 
@@ -127,6 +149,7 @@ else if (!IsFormSubmiting && IsFormSubmited)
         {
             var message = new NotificationMessage { Severity = NotificationSeverity.Error, Summary = Loc["Invalid Coordinates"], Detail = Loc["Invalid Coordinates"] };
             NotificationService.Notify(message);
+            IsFormSubmitedError = true;
             return;
         }
 
@@ -134,12 +157,21 @@ else if (!IsFormSubmiting && IsFormSubmited)
         {
             var message = new NotificationMessage { Severity = NotificationSeverity.Error, Summary = Loc["Invalid Captcha"], Detail = @Loc["Invalid Captcha"] };
             NotificationService.Notify(message);
+            IsFormSubmitedError = true;
             return;
         }
         try
         {
             using var pooContext = DbFactory.CreateDbContext();
             var coordinate = new NetTopologySuite.Geometries.Point(arg.Latitude, arg.Longitude);
+            var neighborhood = GISFunctions.FindNeighborhood(coordinate, pooContext.Neighborhoods);
+            if (neighborhood == null)
+            {
+                var message = new NotificationMessage { Severity = NotificationSeverity.Error, Summary = Loc["Out Of boundaries"], Detail = @Loc["Out Of boundaries"] };
+                NotificationService.Notify(message);
+                IsFormSubmitedError = true;
+                return;
+            }
             var poo = new Poodatum
                 {
                     Date = DateTime.UtcNow,
@@ -147,7 +179,7 @@ else if (!IsFormSubmiting && IsFormSubmited)
                     Location = coordinate,
                     Photo = arg.Photo,
                     Visible = true,
-                    Neighborhood = GISFunctions.FindNeighborhood(coordinate, pooContext.Neighborhoods)
+                    Neighborhood = neighborhood
                 };
 
             await pooContext.AddAsync(poo);
@@ -193,6 +225,12 @@ else if (!IsFormSubmiting && IsFormSubmited)
             data.Latitude = ((LatLng)result).Lat;
             data.Longitude = ((LatLng)result).Lng;
         }
+        await InvokeAsync(() => StateHasChanged());
+    }
+
+    async Task UpdatePosition()
+    {
+        await GetLocation();
         await InvokeAsync(() => StateHasChanged());
     }
 

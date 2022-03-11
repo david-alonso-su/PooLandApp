@@ -21,7 +21,7 @@ else
         <BSRow style="height: 20vh;">
             <BSCol>
                 <RadzenCard>
-                    
+
                     <BSLabel> @(String.Format(@Loc["Weeks Ago From  {0} To {1}"],fromWeekAgoDisplay, toWeekAgoDisplay))</BSLabel>
                     <RadzenSlider Range="true" @bind-Value=@weeksAgo TValue="IEnumerable<int>" Min="@fromWeeksAgo" Max="0" Step=1 Change=@(args => OnChangeWeeksAgo(args)) Class="w-100" />
                 </RadzenCard>
@@ -144,43 +144,51 @@ else
 
     async Task LoadMarkers(IEnumerable<Poodatum> pooData)
     {
-        Logger.LogInformation($"Start Load markers From {fromWeekAgoDisplay} To {toWeekAgoDisplay} at {DateTime.UtcNow}");
-        await ClearMarkers();
-        List<Marker> tmpMarkers = new List<Marker>();
 
-        await Parallel.ForEachAsync(pooData, async (poo, cancellationToken) =>
+        try
         {
-            var popupContent = new LeafletPopupLayout(DbFactory, Logger)
-                {
-                    Description = poo.Description,
-                    Photo = poo.Photo,
-                    Id = poo.Id,
-                    ButtonText = Loc["Report Abuse"]
-                };
+            Logger.LogInformation($"Start Load markers From {fromWeekAgoDisplay} To {toWeekAgoDisplay} at {DateTime.UtcNow}");
+            await ClearMarkers();
+            List<Marker> tmpMarkers = new List<Marker>();
 
-            var popup = new Popup
-                {
-                    Content = popupContent.GetHtml()
-                };
-            //var marker = new Marker(poo.Latitude, poo.Longitude)
-            var marker = new Marker((float)poo.Location.X, (float)poo.Location.Y)
-                {
-                    Icon = new Icon
+            await Parallel.ForEachAsync(pooData, async (poo, cancellationToken) =>
+            {
+                var popupContent = new LeafletPopupLayout(DbFactory, Logger)
                     {
-                        Url = "poo.png",
-                        ClassName = "map-icon",
-                    },
-                    Popup = popup,
-                    Tooltip = new BlazorLeaflet.Models.Tooltip { Content = poo.Description },
-                };
-            MapComponent.AddLayer(marker);
-            tmpMarkers.Add(marker);
-        });
+                        Description = poo.Description,
+                        Photo = poo.Photo,
+                        Id = poo.Id,
+                        ButtonText = Loc["Report Abuse"]
+                    };
 
-        lock (Markers)
-        {
-            Markers.AddRange(tmpMarkers);
+                var popup = new Popup
+                    {
+                        Content = popupContent.GetHtml()
+                    };
+                //var marker = new Marker(poo.Latitude, poo.Longitude)
+                var marker = new Marker((float)poo.Location.X, (float)poo.Location.Y)
+                    {
+                        Icon = new Icon
+                        {
+                            Url = "poo.png",
+                            ClassName = "map-icon",
+                        },
+                        Popup = popup,
+                        Tooltip = new BlazorLeaflet.Models.Tooltip { Content = poo.Description },
+                    };
+                MapComponent.AddLayer(marker);
+                tmpMarkers.Add(marker);
+            });
+
+            lock (Markers)
+            {
+                Markers.AddRange(tmpMarkers);
+            }
+            Logger.LogDebug($"End Load markers at {DateTime.UtcNow}");
         }
-        Logger.LogDebug($"End Load markers at {DateTime.UtcNow}");
+        catch (Exception ex)
+        {
+            Logger.LogError(ex.ToString());
+        }
     }
 }
