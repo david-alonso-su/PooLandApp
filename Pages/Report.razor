@@ -8,6 +8,7 @@
 @inject NotificationService NotificationService
 @inject IDbContextFactory<PooLandDbContext> DbFactory
 @inject IOptionsMonitor<PhotoOptions> photoOptions
+@inject IOptionsMonitor<hCaptchaOptions> hCaptchaOptions
 @inject IStringLocalizer<Report> Loc
 
 @if (!IsFormSubmiting && !IsFormSubmited)
@@ -54,15 +55,18 @@
                         </RadzenCard>
                     </BSCol>
                 </BSRow>
-                <BSRow PaddingLeftAndRight="Padding.Small" Align="Align.Start">
-                    <BSCol ColumnLarge="6" OffsetLarge="3" Padding="Padding.Small">
-                        <RadzenCard>
-                            <HCaptcha Callback=hCaptchaCallback />
-                            <RadzenNumeric Name="HCaptcha" @bind-Value="data.IsCaptchaValid" Visible="false" />
-                            <RadzenNumericRangeValidator Min="1" Max="1" Component="HCaptcha" Text=@Loc["HCaptcha required"] Popup=true Style="position: absolute" />
-                        </RadzenCard>
-                    </BSCol>
-                </BSRow>
+                @if (hCaptchaOptions.CurrentValue.Enabled)
+                {
+                    <BSRow PaddingLeftAndRight="Padding.Small" Align="Align.Start">
+                        <BSCol ColumnLarge="6" OffsetLarge="3" Padding="Padding.Small">
+                            <RadzenCard>
+                                <HCaptcha Callback=hCaptchaCallback />
+                                <RadzenNumeric Name="HCaptcha" @bind-Value="data.IsCaptchaValid" Visible="false" />
+                                <RadzenNumericRangeValidator Min="1" Max="1" Component="HCaptcha" Text=@Loc["HCaptcha required"] Popup=true Style="position: absolute" />
+                            </RadzenCard>
+                        </BSCol>
+                    </BSRow>                
+                }   
                 <BSRow Justify="Justify.Center" MarginTop="Margins.Medium">
                     <BSCol ColumnMedium="12" Align="Align.End" Class="text-center">
                         <RadzenButton ButtonType="ButtonType.Submit" Icon="save" Text=@Loc["Send"] />
@@ -115,6 +119,7 @@ else if (!IsFormSubmiting && IsFormSubmited)
     {
         IsCaptchaValid = Result;
         data.IsCaptchaValid = Convert.ToInt16(IsCaptchaValid);
+        Logger.LogDebug($"hCaptchaCallback {Result}");
     }
 
     protected override async Task OnInitializedAsync()
@@ -153,7 +158,7 @@ else if (!IsFormSubmiting && IsFormSubmited)
             return;
         }
 
-        if (arg.IsCaptchaValid == 0)
+        if (hCaptchaOptions.CurrentValue.Enabled && arg.IsCaptchaValid == 0)
         {
             var message = new NotificationMessage { Severity = NotificationSeverity.Error, Summary = Loc["Invalid Captcha"], Detail = @Loc["Invalid Captcha"] };
             NotificationService.Notify(message);

@@ -15,6 +15,10 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 
+//builder.Services.AddServerSideBlazor().AddCircuitOptions(e => {
+//    e.DetailedErrors = true;
+//});
+
 
 #if DEBUG
 builder.Services.AddDbContextFactory<PooLandDbContext>(options =>
@@ -35,6 +39,7 @@ builder.Services.AddScoped<LocationService>();
 builder.Services.AddScoped<DialogService>();
 builder.Services.AddScoped<NotificationService>();
 
+builder.Services.Configure<hCaptchaOptions>(builder.Configuration.GetSection("hCaptcha"));
 builder.Services.AddHttpClient();
 builder.Services.AddHCaptcha(Options =>
 {
